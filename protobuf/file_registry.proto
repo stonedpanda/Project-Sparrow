@@ -1,0 +1,12 @@
+package file_registry;
+
+message File {
+	required bool active = 1;
+	required string hash = 2;
+	required string name = 3;
+	required string path = 4;
+}
+
+message Registry {
+	repeated File file = 1;
+}

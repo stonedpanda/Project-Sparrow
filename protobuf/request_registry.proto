@@ -1,0 +1,11 @@
+package request_registry;
+
+message Request {
+	required bool active = 1;
+	required string hash = 2;
+	required int32 timeout = 3;
+}
+
+message Registry {
+	repeated Request request = 1;
+}
