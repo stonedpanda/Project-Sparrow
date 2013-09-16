@@ -1,0 +1,61 @@
+# depslib dependency file v1.0
+1379367860 source:/home/jholz/Workspace/sparrow/src/console.cpp
+	"console.hpp"
+
+1379367860 /home/jholz/Workspace/sparrow/src/console.hpp
+	<iostream>
+	<map>
+	"methods.hpp"
+
+1379367860 /home/jholz/Workspace/sparrow/src/methods.hpp
+	<boost/filesystem.hpp>
+	<crypto++/files.h>
+	<crypto++/hex.h>
+	<crypto++/sha.h>
+	<ctime>
+	<fstream>
+	"file_registry.pb.h"
+	"request_registry.pb.h"
+
+1379355315 /home/jholz/Workspace/sparrow/src/file_registry.pb.h
+	<string>
+	<google/protobuf/stubs/common.h>
+	<google/protobuf/generated_message_util.h>
+	<google/protobuf/repeated_field.h>
+	<google/protobuf/extension_set.h>
+	<google/protobuf/generated_message_reflection.h>
+
+1379355315 /home/jholz/Workspace/sparrow/src/request_registry.pb.h
+	<string>
+	<google/protobuf/stubs/common.h>
+	<google/protobuf/generated_message_util.h>
+	<google/protobuf/repeated_field.h>
+	<google/protobuf/extension_set.h>
+	<google/protobuf/generated_message_reflection.h>
+
+1379355315 source:/home/jholz/Workspace/sparrow/src/file_registry.pb.cc
+	"file_registry.pb.h"
+	<algorithm>
+	<google/protobuf/stubs/once.h>
+	<google/protobuf/io/coded_stream.h>
+	<google/protobuf/wire_format_lite_inl.h>
+	<google/protobuf/descriptor.h>
+	<google/protobuf/reflection_ops.h>
+	<google/protobuf/wire_format.h>
+
+1379367860 source:/home/jholz/Workspace/sparrow/src/methods.cpp
+	"methods.hpp"
+
+1379367860 source:/home/jholz/Workspace/sparrow/src/ProjectSparrow.cpp
+	"console.hpp"
+
+1379355315 source:/home/jholz/Workspace/sparrow/src/request_registry.pb.cc
+	"request_registry.pb.h"
+	<algorithm>
+	<google/protobuf/stubs/once.h>
+	<google/protobuf/io/coded_stream.h>
+	<google/protobuf/wire_format_lite_inl.h>
+	<google/protobuf/descriptor.h>
+	<google/protobuf/reflection_ops.h>
+	<google/protobuf/wire_format.h>
+
