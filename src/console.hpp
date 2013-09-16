@@ -9,10 +9,12 @@
 #ifndef CONSOLE_HPP_
 #define CONSOLE_HPP_
 
+// Load libraries
+#include "methods.hpp"
+
+// Load 3rd party libraries
 #include <iostream>
 #include <map>
-
-#include "methods.hpp"
 
 class Console {
 private:

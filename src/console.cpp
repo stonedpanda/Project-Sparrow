@@ -6,7 +6,16 @@
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
 
+// Load libraries
 #include "console.hpp"
+
+//
+// Private Methods
+//
+
+//
+// Public Methods
+//
 
 Console::Console() {
 	running = true;

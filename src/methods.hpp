@@ -9,15 +9,17 @@
 #ifndef METHODS_HPP_
 #define METHODS_HPP_
 
+// Load libraries
+#include "file_registry.pb.h"
+#include "request_registry.pb.h"
+
+// Load 3rd party libraries
 #include <boost/filesystem.hpp>
 #include <crypto++/files.h>
 #include <crypto++/hex.h>
 #include <crypto++/sha.h>
 #include <ctime>
 #include <fstream>
-
-#include "file_registry.pb.h"
-#include "request_registry.pb.h"
 
 class Methods {
 private:
