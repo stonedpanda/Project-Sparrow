@@ -17,21 +17,21 @@
 #include <map>
 
 class Console {
-private:
-	bool running;
-	char commandInput[255];
-	enum commandValues {
-		cvNotDefined,
-		cvCreateRequest,
-		cvHelp,
-		cvListRequests,
-		cvQuit,
-		cvSyncDirectories
-	};
-	std::map<std::string, commandValues> s_mapCommandValues;
-public:
-	Console();
-	void run();
+    private:
+        bool running;
+        char commandInput[255];
+        enum commandValues {
+            cvNotDefined,
+            cvCreateRequest,
+            cvHelp,
+            cvListRequests,
+            cvQuit,
+            cvSyncDirectories
+        };
+        std::map<std::string, commandValues> s_mapCommandValues;
+    public:
+        Console();
+        void run();
 };
 
 #endif /* CONSOLE_HPP_ */

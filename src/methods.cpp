@@ -481,24 +481,15 @@ void Methods::createRequest() {
 }
 
 void Methods::help() {
-	std::cout << std::endl;
-	std::cout << "Example of use:" << std::endl;
-	std::cout << "1. Let's assume that a friend of a friend has a file you want." << std::endl;
-	std::cout << "2. Get the SHA1 hash of that file." << std::endl;
-	std::cout << "3. Execute createRequest and enter the SHA1 hash." << std::endl;
-	std::cout << "4. syncDirectories with a portable device (ie MP3 player, USB Drive, etc)." << std::endl;
-	std::cout << "5. Take the device to friends house and syncDirectories with their computer." << std::endl;
-	std::cout << "6. Tell them to do the same with their friend and check back later." << std::endl;
-	std::cout << "7. Return with your device and execute syncDirectories." << std::endl;
-	std::cout << "8. Return home and syncDirectories with your computer." << std::endl;
-	std::cout << "9. Voila! You have the file." << std::endl;
-	std::cout << std::endl;
-	std::cout << "Commands:" << std::endl;
-	std::cout << "createRequest - Request file by SHA1 hash" << std::endl;
-	std::cout << "listRequests - List file requests in registry" << std::endl;
-	std::cout << "syncDirectories - Sync files and requests between local and portable directories" << std::endl;
-	std::cout << std::endl;
-	std::cout << "Press enter to continue." << std::endl;
+    std::cout << "create - Create a file request" << std::endl;
+    std::cout << "init - Initialize a directory" << std::endl;
+    std::cout << "list - List file requests in registry" << std::endl;
+    std::cout << "quit - Exit the program" << std::endl;
+    std::cout << "sha1sum - Calculate the hash of a file" << std::endl;
+    std::cout << "sync - Sync files and requests between two directories" << std::endl;
+    std::cout << "version - Show version" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Press enter to continue." << std::endl;
 }
 
 void Methods::listRequests() {

@@ -22,19 +22,19 @@
 #include <fstream>
 
 class Methods {
-private:
-	void exportFiles(std::string, std::string);
-	void importFiles(std::string, std::string);
-	void exportRequests(std::string, std::string);
-	void importRequests(std::string, std::string);
-	void initDirectory(std::string);
-	void updateFileRegistry(std::string);
-	void updateRequestRegistry(std::string);
-public:
-	void createRequest();
-	void help();
-	void listRequests();
-	void syncDirectories();
+    private:
+        void exportFiles(std::string, std::string);
+        void importFiles(std::string, std::string);
+        void exportRequests(std::string, std::string);
+        void importRequests(std::string, std::string);
+        void initDirectory(std::string);
+        void updateFileRegistry(std::string);
+        void updateRequestRegistry(std::string);
+    public:
+        void createRequest();
+        void help();
+        void listRequests();
+        void syncDirectories();
 };
 
 #endif /* METHODS_HPP_ */

@@ -37,26 +37,27 @@ void Console::run() {
 		std::cin.getline(commandInput, 255);
 
 		switch(s_mapCommandValues[commandInput]) {
-		case cvCreateRequest:
-			aMethod.createRequest();
-			break;
-		case cvHelp:
-			aMethod.help();
-			break;
-		case cvListRequests:
-			aMethod.listRequests();
-			break;
-		case cvQuit:
-			running = false;
-			return;
-		case cvSyncDirectories:
-			aMethod.syncDirectories();
-			break;
-		default:
-			std::cout << "'" << commandInput << "' is not a valid command. ";
-			std::cout << "Press enter to continue." << std::endl;
-			break;
-		}
-		std::cin.ignore(255, '\n');
-	}
+            case cvCreateRequest:
+                aMethod.createRequest();
+                break;
+            case cvHelp:
+                aMethod.help();
+                break;
+            case cvListRequests:
+                aMethod.listRequests();
+                break;
+            case cvQuit:
+                running = false;
+                return;
+            case cvSyncDirectories:
+                aMethod.syncDirectories();
+                break;
+            default:
+                std::cout << "'" << commandInput << "' is not a valid command. ";
+                std::cout << "Press enter to continue." << std::endl;
+                break;
+        }
+
+        std::cin.ignore(255, '\n');
+    }
 }
