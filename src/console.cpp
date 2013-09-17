@@ -6,7 +6,7 @@
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
 
-// Load libraries
+// Load headers
 #include "console.hpp"
 
 //
@@ -19,11 +19,14 @@
 
 Console::Console() {
 	running = true;
-	s_mapCommandValues["createRequest"] = cvCreateRequest;
-	s_mapCommandValues["help"] = cvHelp;
-	s_mapCommandValues["listRequests"] = cvListRequests;
-	s_mapCommandValues["quit"] = cvQuit;
-	s_mapCommandValues["syncDirectories"] = cvSyncDirectories;
+	s_mapCommandValues["create"] = cvCreateRequest;
+	s_mapCommandValues["help"] = cvDisplayHelp;
+	s_mapCommandValues["init"] = cvInitDirectory;
+	s_mapCommandValues["list"] = cvListRequests;
+	s_mapCommandValues["quit"] = cvQuitProgram;
+	s_mapCommandValues["sha1sum"] = cvCalculateHash;
+	s_mapCommandValues["sync"] = cvSyncDirectories;
+	s_mapCommandValues["version"] = cvShowVersion;
 }
 
 void Console::run() {
@@ -35,29 +38,42 @@ void Console::run() {
 		std::cout << "Command: ";
 		std::cout.flush();
 		std::cin.getline(commandInput, 255);
+		std::cout << std::endl;
 
 		switch(s_mapCommandValues[commandInput]) {
+            case cvCalculateHash:
+                aMethod.sha1sum();
+                break;
             case cvCreateRequest:
                 aMethod.createRequest();
                 break;
-            case cvHelp:
+            case cvDisplayHelp:
                 aMethod.help();
+                break;
+            case cvInitDirectory:
+                aMethod.initDirectory();
                 break;
             case cvListRequests:
                 aMethod.listRequests();
                 break;
-            case cvQuit:
-                running = false;
-                return;
+            case cvShowVersion:
+                aMethod.showVersion();
+                break;
             case cvSyncDirectories:
-                aMethod.syncDirectories();
+                aMethod.sync();
+                break;
+            case cvQuitProgram:
+                running = false;
                 break;
             default:
-                std::cout << "'" << commandInput << "' is not a valid command. ";
+                std::cout << "'" << commandInput << "' is not a valid command." << std::endl;
+                std::cout << std::endl;
                 std::cout << "Press enter to continue." << std::endl;
                 break;
         }
 
-        std::cin.ignore(255, '\n');
+        if(running) {
+            std::cin.ignore(255, '\n');
+        }
     }
 }

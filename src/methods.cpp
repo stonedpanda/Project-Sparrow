@@ -6,6 +6,7 @@
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
 
+// Load headers
 #include "methods.hpp"
 
 //
@@ -318,6 +319,27 @@ void Methods::initDirectory(std::string root_directory) {
 	}
 }
 
+void Methods::sync(std::string local_root, std::string portable_root) {
+    std::cout << "Syncing directories..." << std::endl;
+
+    initDirectory(local_root);
+    initDirectory(portable_root);
+
+    updateRequestRegistry(local_root);
+    updateRequestRegistry(portable_root);
+
+    updateFileRegistry(local_root);
+    updateFileRegistry(portable_root);
+
+    exportFiles(local_root, portable_root);
+    importFiles(local_root, portable_root);
+
+    exportRequests(local_root, portable_root);
+    importRequests(local_root, portable_root);
+
+    std::cout << "Result: Success." << std::endl;
+}
+
 void Methods::updateFileRegistry(std::string root_directory) {
 	bool alreadyDiscovered, fileDiscovered;
 	file_registry::Registry aFileRegistry;
@@ -481,15 +503,24 @@ void Methods::createRequest() {
 }
 
 void Methods::help() {
-    std::cout << "create - Create a file request" << std::endl;
-    std::cout << "init - Initialize a directory" << std::endl;
-    std::cout << "list - List file requests in registry" << std::endl;
-    std::cout << "quit - Exit the program" << std::endl;
-    std::cout << "sha1sum - Calculate the hash of a file" << std::endl;
-    std::cout << "sync - Sync files and requests between two directories" << std::endl;
-    std::cout << "version - Show version" << std::endl;
+    std::cout << "create - Create a file request." << std::endl;
+    std::cout << "init - Initialize a directory." << std::endl;
+    std::cout << "list - List file requests in registry." << std::endl;
+    std::cout << "quit - Exit the program." << std::endl;
+    std::cout << "sha1sum - Calculate the hash of a file." << std::endl;
+    std::cout << "sync - Sync files and requests between two directories." << std::endl;
+    std::cout << "version - Show version." << std::endl;
     std::cout << std::endl;
     std::cout << "Press enter to continue." << std::endl;
+}
+
+void Methods::initDirectory() {
+    std::string root_directory;
+    std::cout << "Enter directory: ";
+    std::cin >> root_directory;
+    std::cout << std::endl;
+    initDirectory(root_directory);
+    std::cout << std::endl;
 }
 
 void Methods::listRequests() {
@@ -518,7 +549,31 @@ void Methods::listRequests() {
 	std::cout << "Result: Success." << std::endl;
 }
 
-void Methods::syncDirectories() {
+void Methods::sha1sum() {
+    std::string hash, path;
+
+    std::cout << "Enter path: ";
+    std::cin >> path;
+
+    std::cout << std::endl;
+    std::cout << "Calculating digest..." << std::endl;
+
+    Crypto aCrypto;
+    hash = aCrypto.sha1sum(path);
+    std::cout << hash << std::endl;
+    std::cout << std::endl;
+    hash.clear();
+}
+
+void Methods::showVersion() {
+    std::cout << "Created: Aug 20, 2012" << std::endl;
+    std::cout << "Updated: Sep 17, 2013" << std::endl;
+    std::cout << "Version: 0.2" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Press enter to continue." << std::endl;
+}
+
+void Methods::sync() {
 	std::string local_root;
 	std::string portable_root;
 
@@ -528,18 +583,5 @@ void Methods::syncDirectories() {
 	std::cout << "Enter portable directory: ";
 	std::cin >> portable_root;
 
-	initDirectory(local_root);
-	initDirectory(portable_root);
-
-	updateRequestRegistry(local_root);
-	updateRequestRegistry(portable_root);
-
-	updateFileRegistry(local_root);
-	updateFileRegistry(portable_root);
-
-	exportFiles(local_root, portable_root);
-	importFiles(local_root, portable_root);
-
-	exportRequests(local_root, portable_root);
-	importRequests(local_root, portable_root);
+	sync(local_root, portable_root);
 }

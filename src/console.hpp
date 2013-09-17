@@ -9,10 +9,10 @@
 #ifndef CONSOLE_HPP_
 #define CONSOLE_HPP_
 
-// Load libraries
+// Load headers
 #include "methods.hpp"
 
-// Load 3rd party libraries
+// Load 3rd-party libraries
 #include <iostream>
 #include <map>
 
@@ -22,11 +22,14 @@ class Console {
         char commandInput[255];
         enum commandValues {
             cvNotDefined,
+            cvCalculateHash,
             cvCreateRequest,
-            cvHelp,
+            cvDisplayHelp,
+            cvInitDirectory,
             cvListRequests,
-            cvQuit,
-            cvSyncDirectories
+            cvQuitProgram,
+            cvShowVersion,
+            cvSyncDirectories,
         };
         std::map<std::string, commandValues> s_mapCommandValues;
     public:
