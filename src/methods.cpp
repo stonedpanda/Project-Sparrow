@@ -14,37 +14,37 @@
 //
 
 void Methods::exportFiles(std::string local_root, std::string portable_root) {
-	// Declare local variables
-	bool updateRequestRegistry;
+	// Declare variables
+	bool updateRequestRegistry = false;
+	Crypto aCrypto;
 	file_registry::File *aFile;
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
 	request_registry::Request *aRequest;
-	std::string fr_file, rr_file;
+	std::string actual_hash;
+	std::string fr_file = local_root + "/file_registry.proto";
+	std::string rr_file = portable_root + "/request_registry.proto";
 	std::string file_path;
 
 	std::cout << "Exporting files..." << std::endl;
 
-	// Set Local Variables
-	fr_file = local_root + "/file_registry.proto";
-	rr_file = portable_root + "/request_registry.proto";
-	updateRequestRegistry = false;
-
-	// Load Protocol Buffers
+	// Load file registry
 	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-
-	if(!aFileRegistry.ParseFromIstream(&fr_input)) {
+    if(!aFileRegistry.ParseFromIstream(&fr_input)) {
 		std::cerr << "Failed to parse file registry" << std::endl;
 		return;
 	}
+	fr_input.close();
 
+	// Load request registry
+	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
 	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
 		std::cerr << "Failed to parse request registry" << std::endl;\
 		return;
 	}
+	rr_input.close();
 
-	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
+	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
 		aRequest = aRequestRegistry.mutable_request(i);
 
 		// Check if request is active
@@ -52,24 +52,7 @@ void Methods::exportFiles(std::string local_root, std::string portable_root) {
 			for(int j = 0; j < aFileRegistry.file_size(); j++) {
 				aFile = aFileRegistry.mutable_file(j);
 				if(aFile->hash() == aRequest->hash()) {
-					std::string actual_path = local_root + "/" + aFile->path();
-					std::string actual_hash;
-					CryptoPP::SHA1 hashFunction;
-
-					CryptoPP::FileSource(
-						actual_path.c_str(),
-						true,
-						new CryptoPP::HashFilter(
-							hashFunction,
-							new CryptoPP::HexEncoder(
-								new CryptoPP::StringSink(
-									actual_hash
-								),
-								false
-							)
-						)
-					);
-
+					actual_hash = aCrypto.sha1sum(local_root + "/" + aFile->path());
 					if(aFile->hash() == actual_hash) {
 						boost::filesystem::copy_file(
 							local_root + aFile->path(),
@@ -79,7 +62,7 @@ void Methods::exportFiles(std::string local_root, std::string portable_root) {
 						aRequest->set_active(false);
 						updateRequestRegistry = true;
 					} else {
-						std::cout << "Invalid hash" << std::endl;
+						std::cout << "Error: Invalid hash." << std::endl;
 					}
 					break;
 				}
@@ -88,10 +71,13 @@ void Methods::exportFiles(std::string local_root, std::string portable_root) {
 	}
 
 	if(updateRequestRegistry) {
+        // Update request registry
 		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
 			std::cerr << "Failed to write request registry." << std::endl;
 		}
+		output.close();
+
 		updateFileRegistry(portable_root);
 	}
 
@@ -131,8 +117,8 @@ void Methods::importFiles(std::string local_root, std::string portable_root) {
 				const file_registry::File& aFile = aFileRegistry.file(j);
 				if(aFile.hash() == aRequest->hash()) {
 					std::string actual_path = portable_root + aFile.path();
-
 					std::string actual_hash;
+
 					CryptoPP::SHA1 hashFunction;
 
 					CryptoPP::FileSource(
