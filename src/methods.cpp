@@ -314,27 +314,33 @@ void Methods::importRequests(std::string local_root_dir, std::string portable_ro
 }
 
 void Methods::initDirectory(std::string root_directory) {
+    // Declare variables
+    FILE *pFile;
 	std::string fr_file = root_directory + "/file_registry.proto";
 	std::string rr_file = root_directory + "/request_registry.proto";
 	std::string share_folder = root_directory + "/shared";
 
-	FILE *pFile;
-
+    // Check for file registry
 	if(!boost::filesystem::exists(fr_file)) {
+        // Create file registry
 		pFile = fopen(fr_file.c_str(), "w");
 		if(pFile != NULL) {
 			fclose(pFile);
 		}
 	}
 
+    // Check for request registry
 	if(!boost::filesystem::exists(rr_file)) {
+        // Create request registry
 		pFile = fopen(rr_file.c_str(), "w");
 		if(pFile != NULL) {
 			fclose(pFile);
 		}
 	}
 
+    // Check for share folder
 	if(!boost::filesystem::is_directory(share_folder)) {
+        // Create share folder
 		boost::filesystem::create_directory(share_folder);
 	}
 }
@@ -485,8 +491,8 @@ void Methods::initDirectory() {
     std::string root_directory;
     std::cout << "Enter directory: ";
     std::cin >> root_directory;
-    std::cout << std::endl;
     initDirectory(root_directory);
+    std::cout << "Result: Success." << std::endl;
     std::cout << std::endl;
 }
 
