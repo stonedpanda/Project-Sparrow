@@ -113,10 +113,17 @@ class File : public ::google::protobuf::Message {
   inline ::std::string* mutable_name();
   inline ::std::string* release_name();
   
-  // required string type = 3;
+  // required int32 size = 3;
+  inline bool has_size() const;
+  inline void clear_size();
+  static const int kSizeFieldNumber = 3;
+  inline ::google::protobuf::int32 size() const;
+  inline void set_size(::google::protobuf::int32 value);
+  
+  // required string type = 4;
   inline bool has_type() const;
   inline void clear_type();
-  static const int kTypeFieldNumber = 3;
+  static const int kTypeFieldNumber = 4;
   inline const ::std::string& type() const;
   inline void set_type(const ::std::string& value);
   inline void set_type(const char* value);
@@ -130,6 +137,8 @@ class File : public ::google::protobuf::Message {
   inline void clear_has_hash();
   inline void set_has_name();
   inline void clear_has_name();
+  inline void set_has_size();
+  inline void clear_has_size();
   inline void set_has_type();
   inline void clear_has_type();
   
@@ -138,9 +147,10 @@ class File : public ::google::protobuf::Message {
   ::std::string* hash_;
   ::std::string* name_;
   ::std::string* type_;
+  ::google::protobuf::int32 size_;
   
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
   
   friend void  protobuf_AddDesc_search_5findex_2eproto();
   friend void protobuf_AssignDesc_search_5findex_2eproto();
@@ -357,15 +367,37 @@ inline ::std::string* File::release_name() {
   }
 }
 
-// required string type = 3;
-inline bool File::has_type() const {
+// required int32 size = 3;
+inline bool File::has_size() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void File::set_has_type() {
+inline void File::set_has_size() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void File::clear_has_type() {
+inline void File::clear_has_size() {
   _has_bits_[0] &= ~0x00000004u;
+}
+inline void File::clear_size() {
+  size_ = 0;
+  clear_has_size();
+}
+inline ::google::protobuf::int32 File::size() const {
+  return size_;
+}
+inline void File::set_size(::google::protobuf::int32 value) {
+  set_has_size();
+  size_ = value;
+}
+
+// required string type = 4;
+inline bool File::has_type() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void File::set_has_type() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void File::clear_has_type() {
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void File::clear_type() {
   if (type_ != &::google::protobuf::internal::kEmptyString) {

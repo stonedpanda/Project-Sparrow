@@ -34,9 +34,10 @@ void protobuf_AssignDesc_search_5findex_2eproto() {
       "search_index.proto");
   GOOGLE_CHECK(file != NULL);
   File_descriptor_ = file->message_type(0);
-  static const int File_offsets_[3] = {
+  static const int File_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(File, hash_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(File, name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(File, size_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(File, type_),
   };
   File_reflection_ =
@@ -99,10 +100,10 @@ void protobuf_AddDesc_search_5findex_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\022search_index.proto\022\014search_index\"0\n\004Fi"
-    "le\022\014\n\004hash\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004type\030\003"
-    " \002(\t\")\n\005Index\022 \n\004file\030\001 \003(\0132\022.search_ind"
-    "ex.File", 127);
+    "\n\022search_index.proto\022\014search_index\">\n\004Fi"
+    "le\022\014\n\004hash\030\001 \002(\t\022\014\n\004name\030\002 \002(\t\022\014\n\004size\030\003"
+    " \002(\005\022\014\n\004type\030\004 \002(\t\")\n\005Index\022 \n\004file\030\001 \003("
+    "\0132\022.search_index.File", 141);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "search_index.proto", &protobuf_RegisterTypes);
   File::default_instance_ = new File();
@@ -125,6 +126,7 @@ struct StaticDescriptorInitializer_search_5findex_2eproto {
 #ifndef _MSC_VER
 const int File::kHashFieldNumber;
 const int File::kNameFieldNumber;
+const int File::kSizeFieldNumber;
 const int File::kTypeFieldNumber;
 #endif  // !_MSC_VER
 
@@ -146,6 +148,7 @@ void File::SharedCtor() {
   _cached_size_ = 0;
   hash_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  size_ = 0;
   type_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -200,6 +203,7 @@ void File::Clear() {
         name_->clear();
       }
     }
+    size_ = 0;
     if (has_type()) {
       if (type_ != &::google::protobuf::internal::kEmptyString) {
         type_->clear();
@@ -245,12 +249,28 @@ bool File::MergePartialFromCodedStream(
         } else {
           goto handle_uninterpreted;
         }
-        if (input->ExpectTag(26)) goto parse_type;
+        if (input->ExpectTag(24)) goto parse_size;
         break;
       }
       
-      // required string type = 3;
+      // required int32 size = 3;
       case 3: {
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
+         parse_size:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &size_)));
+          set_has_size();
+        } else {
+          goto handle_uninterpreted;
+        }
+        if (input->ExpectTag(34)) goto parse_type;
+        break;
+      }
+      
+      // required string type = 4;
+      case 4: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
          parse_type:
@@ -302,13 +322,18 @@ void File::SerializeWithCachedSizes(
       2, this->name(), output);
   }
   
-  // required string type = 3;
+  // required int32 size = 3;
+  if (has_size()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->size(), output);
+  }
+  
+  // required string type = 4;
   if (has_type()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->type().data(), this->type().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     ::google::protobuf::internal::WireFormatLite::WriteString(
-      3, this->type(), output);
+      4, this->type(), output);
   }
   
   if (!unknown_fields().empty()) {
@@ -339,14 +364,19 @@ void File::SerializeWithCachedSizes(
         2, this->name(), target);
   }
   
-  // required string type = 3;
+  // required int32 size = 3;
+  if (has_size()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->size(), target);
+  }
+  
+  // required string type = 4;
   if (has_type()) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8String(
       this->type().data(), this->type().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE);
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->type(), target);
+        4, this->type(), target);
   }
   
   if (!unknown_fields().empty()) {
@@ -374,7 +404,14 @@ int File::ByteSize() const {
           this->name());
     }
     
-    // required string type = 3;
+    // required int32 size = 3;
+    if (has_size()) {
+      total_size += 1 +
+        ::google::protobuf::internal::WireFormatLite::Int32Size(
+          this->size());
+    }
+    
+    // required string type = 4;
     if (has_type()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -414,6 +451,9 @@ void File::MergeFrom(const File& from) {
     if (from.has_name()) {
       set_name(from.name());
     }
+    if (from.has_size()) {
+      set_size(from.size());
+    }
     if (from.has_type()) {
       set_type(from.type());
     }
@@ -434,7 +474,7 @@ void File::CopyFrom(const File& from) {
 }
 
 bool File::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
+  if ((_has_bits_[0] & 0x0000000f) != 0x0000000f) return false;
   
   return true;
 }
@@ -443,6 +483,7 @@ void File::Swap(File* other) {
   if (other != this) {
     std::swap(hash_, other->hash_);
     std::swap(name_, other->name_);
+    std::swap(size_, other->size_);
     std::swap(type_, other->type_);
     std::swap(_has_bits_[0], other->_has_bits_[0]);
     _unknown_fields_.Swap(&other->_unknown_fields_);

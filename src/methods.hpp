@@ -33,6 +33,7 @@ class Methods {
         void sync(std::string, std::string);
         void updateFileRegistry(std::string);
         void updateRequestRegistry(std::string);
+        void updateSearchIndex(std::string);
     public:
         void createRequest();
         void help();

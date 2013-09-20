@@ -3,7 +3,8 @@ package search_index;
 message File {
 	required string hash = 1;
 	required string name = 2;
-	required string type = 3;
+	required int32 size = 3;
+	required string type = 4;
 }
 
 message Index {
