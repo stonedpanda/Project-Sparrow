@@ -33,6 +33,7 @@ class Methods {
         void importRequests(std::string, std::string);
         std::string initDirectory(std::string);
         std::string listRequests(std::string);
+        std::string sha1sum(std::string);
         void sync(std::string, std::string);
         void updateFileRegistry(std::string);
         void updateRequestRegistry(std::string);

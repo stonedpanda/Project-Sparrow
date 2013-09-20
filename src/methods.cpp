@@ -366,6 +366,14 @@ std::string Methods::listRequests(std::string root_directory) {
 	return "Result: Success.";
 }
 
+std::string Methods::sha1sum(std::string path) {
+    //Declare variables
+    Crypto aCrypto;
+
+    std::cout << aCrypto.sha1sum(path) << std::endl;
+    return "Result: Success.";
+}
+
 void Methods::sync(std::string local_root, std::string portable_root) {
     std::cout << "Syncing directories..." << std::endl;
 
@@ -490,11 +498,15 @@ void Methods::createRequest() {
     // Ask user for directory
     std::cout << "Enter directory: ";
     std::cin >> directory;
+    std::cout << std::endl;
 
     // Ask user for digest
     std::cout << "Enter file hash: ";
     std::cin >> digest;
+    std::cout << std::endl;
 
+    // Create request
+    std::cout << "Creating request..." << std::endl;
     std::cout << createRequest(digest, directory) << std::endl;
     std::cout << std::endl;
 }
@@ -542,7 +554,7 @@ void Methods::listRequests() {
 }
 
 void Methods::sha1sum() {
-    Crypto aCrypto;
+    // Declare variables
     std::string path;
 
     // Ask user for file location
@@ -552,8 +564,7 @@ void Methods::sha1sum() {
 
     // Calculate digest
     std::cout << "Calculating digest..." << std::endl;
-    std::cout << aCrypto.sha1sum(path) << std::endl;
-    std::cout << "Result: Success." << std::endl;
+    std::cout << sha1sum(path) << std::endl;
     std::cout << std::endl;
 }
 
