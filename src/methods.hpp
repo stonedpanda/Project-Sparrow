@@ -24,20 +24,21 @@
 
 class Methods {
     private:
+        bool exportFiles(std::string, std::string);
+        bool exportIndexes(std::string, std::string);
+        bool exportRequests(std::string, std::string);
+        bool importFiles(std::string, std::string);
+        bool importIndexes(std::string, std::string);
+        bool importRequests(std::string, std::string);
+        bool updateFileRegistry(std::string);
+        bool updateRequestRegistry(std::string);
+        bool updateSearchIndex(std::string);
+    protected:
         std::string createRequest(std::string, std::string);
-        void exportFiles(std::string, std::string);
-        void exportIndexes(std::string, std::string);
-        void exportRequests(std::string, std::string);
-        void importFiles(std::string, std::string);
-        void importIndexes(std::string, std::string);
-        void importRequests(std::string, std::string);
-        std::string initDirectory(std::string);
+        bool initDirectory(std::string);
         std::string listRequests(std::string);
         std::string sha1sum(std::string);
-        void sync(std::string, std::string);
-        void updateFileRegistry(std::string);
-        void updateRequestRegistry(std::string);
-        void updateSearchIndex(std::string);
+        std::string sync(std::string, std::string);
     public:
         void createRequest();
         void help();

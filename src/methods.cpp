@@ -13,6 +13,360 @@
 // Private Methods
 //
 
+bool Methods::exportFiles(std::string local_root, std::string portable_root) {
+	// Declare variables
+	bool updateRequestRegistry = false;
+	Crypto aCrypto;
+	file_registry::File *aFile;
+	file_registry::Registry aFileRegistry;
+	request_registry::Registry aRequestRegistry;
+	request_registry::Request *aRequest;
+	std::string actual_hash;
+	std::string fr_file = local_root + "/file_registry.proto";
+	std::string rr_file = portable_root + "/request_registry.proto";
+	std::string file_path;
+
+	std::cout << "Exporting files..." << std::endl;
+
+	// Load file registry
+	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
+    if(!aFileRegistry.ParseFromIstream(&fr_input)) {
+		std::cerr << "Error: Failed to load file registry" << std::endl;
+		return false;
+	}
+	fr_input.close();
+
+	// Load request registry
+	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
+		std::cerr << "Error: Failed to load request registry" << std::endl;
+		return false;
+	}
+	rr_input.close();
+
+	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
+		aRequest = aRequestRegistry.mutable_request(i);
+
+		// Check if request is active
+		if(aRequest->active()) {
+			for(int j = 0; j < aFileRegistry.file_size(); j++) {
+				aFile = aFileRegistry.mutable_file(j);
+				if(aFile->hash() == aRequest->hash()) {
+					actual_hash = aCrypto.sha1sum(local_root + "/" + aFile->path());
+					if(aFile->hash() == actual_hash) {
+						boost::filesystem::copy_file(
+							local_root + aFile->path(),
+							portable_root + "/shared/" + aFile->name(),
+							boost::filesystem::copy_option::overwrite_if_exists
+						);
+						aRequest->set_active(false);
+						updateRequestRegistry = true;
+					} else {
+						std::cerr << "Error: Invalid hash." << std::endl;
+					}
+					break;
+				}
+			}
+		}
+	}
+
+	if(updateRequestRegistry) {
+        // Update request registry
+		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
+			std::cerr << "Error: Failed to update request registry." << std::endl;
+			return false;
+		}
+		output.close();
+		updateFileRegistry(portable_root);
+	}
+    return true;
+}
+
+bool Methods::importFiles(std::string local_root, std::string portable_root) {
+    // Declare variables
+    bool updateRequestRegistry = false;
+    Crypto aCrypto;
+	file_registry::Registry aFileRegistry;
+	request_registry::Registry aRequestRegistry;
+	request_registry::Request *aRequest;
+	std::string file_path;
+    std::string fr_file = portable_root + "/file_registry.proto";
+	std::string rr_file = local_root + "/request_registry.proto";
+
+	std::cout << "Importing files..." << std::endl;
+
+    // Load file registry
+	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
+    if(!aFileRegistry.ParseFromIstream(&fr_input)) {
+		std::cerr << "Error: Failed to load file registry." << std::endl;
+		return false;
+	}
+	fr_input.close();
+
+	// Load request registry
+	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
+    if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
+		std::cerr << "Error: Failed to load request registry." << std::endl;\
+		return false;
+	}
+    rr_input.close();
+
+	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
+		aRequest = aRequestRegistry.mutable_request(i);
+
+		if(aRequest->active()) {
+			for(int j = 0; j < aFileRegistry.file_size(); j++) {
+				const file_registry::File& aFile = aFileRegistry.file(j);
+				if(aFile.hash() == aRequest->hash()) {
+					std::string actual_hash = aCrypto.sha1sum(portable_root + aFile.path());
+
+					if(aFile.hash() == actual_hash) {
+						boost::filesystem::copy_file(
+							portable_root + aFile.path(),
+							local_root + "/shared/" + aFile.name(),
+							boost::filesystem::copy_option::overwrite_if_exists
+						);
+						aRequest->set_active(false);
+						updateRequestRegistry = true;
+					} else {
+						std::cout << "Error: Invalid hash." << std::endl;
+					}
+				}
+			}
+		}
+	}
+
+	if(updateRequestRegistry) {
+		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
+			std::cerr << "Error: Failed to update request registry." << std::endl;
+			return false;
+		}
+		output.close();
+		updateFileRegistry(local_root);
+	}
+    return true;
+}
+
+bool Methods::exportRequests(std::string local_root_dir, std::string portable_root_dir) {
+	bool requestFound = false;
+	bool updatePortable = false;
+	request_registry::Registry localRequestRegistry, portableRequestRegistry;
+	std::string local_file = local_root_dir + "/request_registry.proto";
+	std::string portable_file = portable_root_dir + "/request_registry.proto";
+
+	std::cout << "Exporting requests..." << std::endl;
+
+	// Load local request registry
+	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
+	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
+		std::cerr << "Error: Failed to load local request registry." << std::endl;
+		return false;
+	}
+	local_input.close();
+
+	// Load portable request registry
+	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
+	if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
+		std::cerr << "Error: Failed to load portable request registry." << std::endl;
+		return false;
+	}
+	portable_input.close();
+
+	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
+		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
+		requestFound = false;
+
+		std::cout << aLocalRequest->hash() << aLocalRequest->active() << std::endl;
+
+		if(aLocalRequest->active()) {
+			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
+				const request_registry::Request& aPortableRequest = portableRequestRegistry.request(j);
+				if(aLocalRequest->hash() == aPortableRequest.hash()) {
+					requestFound = true;
+				}
+			}
+
+			if(!requestFound) {
+				request_registry::Request *aRequest = portableRequestRegistry.add_request();
+				aRequest->set_active(true);
+				aRequest->set_hash(aLocalRequest->hash());
+				aRequest->set_timeout(aLocalRequest->timeout());
+				updatePortable = true;
+			}
+		}
+	}
+
+	if(updatePortable) {
+        // Update portable request registry
+		std::fstream output(portable_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	    if (!portableRequestRegistry.SerializeToOstream(&output)) {
+	    	std::cerr << "Error: Failed to update request registry." << std::endl;
+            return false;
+	    }
+	    output.close();
+	}
+    return true;
+}
+
+bool Methods::importRequests(std::string local_root_dir, std::string portable_root_dir) {
+    // Declare variables
+	bool requestFound = false;
+	bool updateLocal = false;
+	request_registry::Registry localRequestRegistry, portableRequestRegistry;
+	std::string local_file = local_root_dir + "/request_registry.proto";
+	std::string portable_file = portable_root_dir + "/request_registry.proto";
+
+	std::cout << "Importing requests... " << std::endl;
+
+	// Load local request registry
+	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
+	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
+		std::cerr << "Error: Failed to load local request registry." << std::endl;
+		return false;
+	}
+	local_input.close();
+
+	// Load portable request registry
+	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
+    if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
+		std::cerr << "Error: Failed to load portable request registry." << std::endl;
+		return false;
+	}
+	portable_input.close();
+
+	for(int i = 0; i < portableRequestRegistry.request_size(); i++) {
+		request_registry::Request *aPortableRequest = portableRequestRegistry.mutable_request(i);
+		requestFound = false;
+
+		if(aPortableRequest->active()) {
+			for(int j = 0; j < localRequestRegistry.request_size(); j++) {
+				const request_registry::Request& aLocalRequest = localRequestRegistry.request(j);
+				if(aLocalRequest.hash() == aPortableRequest->hash()) {
+					requestFound = true;
+				}
+			}
+
+			if(!requestFound) {
+				updateLocal = true;
+				request_registry::Request *aRequest = localRequestRegistry.add_request();
+				aRequest->set_active(true);
+				aRequest->set_hash(aPortableRequest->hash());
+				aRequest->set_timeout(aPortableRequest->timeout());
+			}
+		}
+	}
+
+	if(updateLocal) {
+        // Update local request registry
+		std::fstream output(local_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+		if(!localRequestRegistry.SerializePartialToOstream(&output)) {
+			std::cerr << "Error: Failed to update request registry." << std::endl;
+			return false;
+		}
+		output.close();
+	}
+	return true;
+}
+
+bool Methods::updateFileRegistry(std::string root_directory) {
+    // Declare variables
+	bool alreadyDiscovered, fileDiscovered;
+	Crypto aCrypto;
+	file_registry::Registry aFileRegistry;
+	std::string registry_file = root_directory + "/file_registry.proto";
+	std::string share_directory = root_directory + "/shared";
+
+	boost::filesystem::path share_path(share_directory);
+	boost::filesystem::directory_iterator iter(share_path), end;
+
+	// Load file registry
+	std::fstream fr_input(registry_file.c_str(), std::ios::in | std::ios::binary);
+	if(!aFileRegistry.ParseFromIstream(&fr_input)) {
+		std::cerr << "Error: Failed to load file registry." << std::endl;
+		return false;
+	}
+	fr_input.close();
+
+	// Lookup each file in shared directory
+	for(;iter != end; ++iter) {
+		alreadyDiscovered = false;
+		std::string fileName = iter->path().filename().string();
+		std::string filePath = "/shared/" + fileName;
+		std::string fileHash = aCrypto.sha1sum(share_directory + "/" + fileName);
+
+		// Look up hash in file registry
+		for(int i = 0; i < aFileRegistry.file_size(); i++) {
+			const file_registry::File& aFile = aFileRegistry.file(i);
+			if(aFile.hash() == fileHash) {
+				alreadyDiscovered = true;
+				break;
+			}
+		}
+
+		if(!alreadyDiscovered) {
+			std::cout << fileHash + ": just discovered" << std::endl;
+			fileDiscovered = true;
+			file_registry::File *aFile = aFileRegistry.add_file();
+			aFile->set_active(true);
+			aFile->set_hash(fileHash);
+			aFile->set_name(fileName);
+			aFile->set_path(filePath);
+		} else {
+			std::cout << fileHash + ": already discovered" << std::endl;
+		}
+	}
+
+	if(fileDiscovered) {
+		std::fstream output(registry_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	    if (!aFileRegistry.SerializeToOstream(&output)) {
+	    	std::cerr << "Error: Failed to update file registry." << std::endl;
+	    	return false;
+	    }
+	    output.close();
+	}
+	return true;
+}
+
+bool Methods::updateRequestRegistry(std::string root_directory) {
+    // Declare variables
+	request_registry::Registry newRequestRegistry;
+	request_registry::Registry oldRequestRegistry;
+    std::string rr_file = root_directory + "/request_registry.proto";
+
+    // Load request registry
+	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	if(!oldRequestRegistry.ParseFromIstream(&input)) {
+		std::cerr << "Error: Unable to load request registry" << std::endl;
+	}
+	input.close();
+
+	for(int i = 0; i < oldRequestRegistry.request_size(); i++) {
+		std::time_t t = std::time(0);
+		request_registry::Request *aRequest = oldRequestRegistry.mutable_request(i);
+		if(aRequest->timeout() > t) {
+			request_registry::Request *newRequest = newRequestRegistry.add_request();
+			newRequest->set_active(aRequest->active());
+			newRequest->set_hash(aRequest->hash());
+			newRequest->set_timeout(aRequest->timeout());
+		}
+	}
+
+    // Update request registry
+	std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+    if (!newRequestRegistry.SerializeToOstream(&output)) {
+    	std::cerr << "Error: Failed to update request registry." << std::endl;
+    	return false;
+    }
+    output.close();
+    return true;
+}
+
+//
+// Protected Methods
+//
+
 std::string Methods::createRequest(std::string file_hash, std::string root_directory) {
 	// Declare variables
 	bool alreadyRequested = false;
@@ -57,263 +411,7 @@ std::string Methods::createRequest(std::string file_hash, std::string root_direc
 	return "Result: Success.";
 }
 
-void Methods::exportFiles(std::string local_root, std::string portable_root) {
-	// Declare variables
-	bool updateRequestRegistry = false;
-	Crypto aCrypto;
-	file_registry::File *aFile;
-	file_registry::Registry aFileRegistry;
-	request_registry::Registry aRequestRegistry;
-	request_registry::Request *aRequest;
-	std::string actual_hash;
-	std::string fr_file = local_root + "/file_registry.proto";
-	std::string rr_file = portable_root + "/request_registry.proto";
-	std::string file_path;
-
-	std::cout << "Exporting files..." << std::endl;
-
-	// Load file registry
-	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
-    if(!aFileRegistry.ParseFromIstream(&fr_input)) {
-		std::cerr << "Failed to parse file registry" << std::endl;
-		return;
-	}
-	fr_input.close();
-
-	// Load request registry
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		std::cerr << "Failed to parse request registry" << std::endl;\
-		return;
-	}
-	rr_input.close();
-
-	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
-		aRequest = aRequestRegistry.mutable_request(i);
-
-		// Check if request is active
-		if(aRequest->active()) {
-			for(int j = 0; j < aFileRegistry.file_size(); j++) {
-				aFile = aFileRegistry.mutable_file(j);
-				if(aFile->hash() == aRequest->hash()) {
-					actual_hash = aCrypto.sha1sum(local_root + "/" + aFile->path());
-					if(aFile->hash() == actual_hash) {
-						boost::filesystem::copy_file(
-							local_root + aFile->path(),
-							portable_root + "/shared/" + aFile->name(),
-							boost::filesystem::copy_option::overwrite_if_exists
-						);
-						aRequest->set_active(false);
-						updateRequestRegistry = true;
-					} else {
-						std::cout << "Error: Invalid hash." << std::endl;
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	if(updateRequestRegistry) {
-        // Update request registry
-		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
-			std::cerr << "Failed to write request registry." << std::endl;
-		}
-		output.close();
-
-		updateFileRegistry(portable_root);
-	}
-
-	std::cout << "Result: Success." << std::endl;
-}
-
-void Methods::importFiles(std::string local_root, std::string portable_root) {
-    // Declare variables
-    bool updateRequestRegistry = false;
-    Crypto aCrypto;
-	file_registry::Registry aFileRegistry;
-	request_registry::Registry aRequestRegistry;
-	request_registry::Request *aRequest;
-	std::string file_path;
-    std::string fr_file = portable_root + "/file_registry.proto";
-	std::string rr_file = local_root + "/request_registry.proto";
-
-	std::cout << "Importing files..." << std::endl;
-
-    // Load file registry
-	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
-    if(!aFileRegistry.ParseFromIstream(&fr_input)) {
-		std::cerr << "Failed to parse file registry" << std::endl;
-		return;
-	}
-	fr_input.close();
-
-	// Load request registry
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-    if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		std::cerr << "Failed to parse request registry" << std::endl;\
-		return;
-	}
-    rr_input.close();
-
-	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
-		aRequest = aRequestRegistry.mutable_request(i);
-
-		if(aRequest->active()) {
-			for(int j = 0; j < aFileRegistry.file_size(); j++) {
-				const file_registry::File& aFile = aFileRegistry.file(j);
-				if(aFile.hash() == aRequest->hash()) {
-					std::string actual_hash = aCrypto.sha1sum(portable_root + aFile.path());
-
-					if(aFile.hash() == actual_hash) {
-						boost::filesystem::copy_file(
-							portable_root + aFile.path(),
-							local_root + "/shared/" + aFile.name(),
-							boost::filesystem::copy_option::overwrite_if_exists
-						);
-						aRequest->set_active(false);
-						updateRequestRegistry = true;
-					} else {
-						std::cout << "Error: Invalid hash." << std::endl;
-					}
-				}
-			}
-		}
-	}
-
-	if(updateRequestRegistry) {
-		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
-			std::cerr << "Failed to write request registry." << std::endl;
-		}
-		output.close();
-		updateFileRegistry(local_root);
-	}
-
-	std::cout << "Result: Success." << std::endl;
-}
-
-void Methods::exportRequests(std::string local_root_dir, std::string portable_root_dir) {
-	bool requestFound = false;
-	bool updatePortable = false;
-	request_registry::Registry localRequestRegistry, portableRequestRegistry;
-	std::string local_file = local_root_dir + "/request_registry.proto";
-	std::string portable_file = portable_root_dir + "/request_registry.proto";
-
-	std::cout << "Exporting requests..." << std::endl;
-
-	// Load local request registry
-	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
-	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
-		std::cerr << "Failed to parse local request registry." << std::endl;
-		return;
-	}
-	local_input.close();
-
-	// Load portable request registry
-	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
-	if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
-		std::cerr << "Failed to parse portable request registry." << std::endl;
-		return;
-	}
-	portable_input.close();
-
-	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
-		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
-		requestFound = false;
-
-		std::cout << aLocalRequest->hash() << aLocalRequest->active() << std::endl;
-
-		if(aLocalRequest->active()) {
-			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
-				const request_registry::Request& aPortableRequest = portableRequestRegistry.request(j);
-				if(aLocalRequest->hash() == aPortableRequest.hash()) {
-					requestFound = true;
-				}
-			}
-
-			if(!requestFound) {
-				request_registry::Request *aRequest = portableRequestRegistry.add_request();
-				aRequest->set_active(true);
-				aRequest->set_hash(aLocalRequest->hash());
-				aRequest->set_timeout(aLocalRequest->timeout());
-				updatePortable = true;
-			}
-		}
-	}
-
-	if(updatePortable) {
-        // Update portable request registry
-		std::fstream output(portable_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-	    if (!portableRequestRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Failed to write request registry." << std::endl;
-	    }
-	    output.close();
-	}
-
-	std::cout << "Result: Success." << std::endl;
-}
-
-void Methods::importRequests(std::string local_root_dir, std::string portable_root_dir) {
-	bool requestFound = false;
-	bool updateLocal = false;
-	request_registry::Registry localRequestRegistry, portableRequestRegistry;
-	std::string local_file = local_root_dir + "/request_registry.proto";
-	std::string portable_file = portable_root_dir + "/request_registry.proto";
-
-	std::cout << "Importing requests... " << std::endl;
-
-	// Load local request registry
-	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
-	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
-		std::cerr << "Failed to parse local request registry." << std::endl;
-		return;
-	}
-	local_input.close();
-
-	// Load portable request registry
-	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
-    if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
-		std::cerr << "Failed to parse portable request registry." << std::endl;
-		return;
-	}
-	portable_input.close();
-
-	for(int i = 0; i < portableRequestRegistry.request_size(); i++) {
-		request_registry::Request *aPortableRequest = portableRequestRegistry.mutable_request(i);
-		requestFound = false;
-
-		if(aPortableRequest->active()) {
-			for(int j = 0; j < localRequestRegistry.request_size(); j++) {
-				const request_registry::Request& aLocalRequest = localRequestRegistry.request(j);
-				if(aLocalRequest.hash() == aPortableRequest->hash()) {
-					requestFound = true;
-				}
-			}
-
-			if(!requestFound) {
-				updateLocal = true;
-				request_registry::Request *aRequest = localRequestRegistry.add_request();
-				aRequest->set_active(true);
-				aRequest->set_hash(aPortableRequest->hash());
-				aRequest->set_timeout(aPortableRequest->timeout());
-			}
-		}
-	}
-
-	if(updateLocal) {
-        // Update local request registry
-		std::fstream output(local_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-		if(!localRequestRegistry.SerializePartialToOstream(&output)) {
-			std::cerr << "Failed to write request registry." << std::endl;
-		}
-		output.close();
-	}
-	std::cout << "Result: Success." << std::endl;
-}
-
-std::string Methods::initDirectory(std::string root_directory) {
+bool Methods::initDirectory(std::string root_directory) {
     // Declare variables
     FILE *pFile;
 	std::string fr_file = root_directory + "/file_registry.proto";
@@ -344,7 +442,7 @@ std::string Methods::initDirectory(std::string root_directory) {
 		boost::filesystem::create_directory(share_folder);
 	}
 
-	return "Result: Success.";
+	return true;
 }
 
 std::string Methods::listRequests(std::string root_directory) {
@@ -374,117 +472,48 @@ std::string Methods::sha1sum(std::string path) {
     return "Result: Success.";
 }
 
-void Methods::sync(std::string local_root, std::string portable_root) {
-    std::cout << "Syncing directories..." << std::endl;
-
+std::string Methods::sync(std::string local_root, std::string portable_root) {
     // Initialize directories
-    initDirectory(local_root);
-    initDirectory(portable_root);
+    std::cout << "Initializing directories... ";
+    if(initDirectory(local_root) && initDirectory(portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
 
     // Update request registries
-    updateRequestRegistry(local_root);
-    updateRequestRegistry(portable_root);
+    std::cout << "Updating request registries... ";
+    if(updateRequestRegistry(local_root) && updateRequestRegistry(portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
 
     // Update file registries
-    updateFileRegistry(local_root);
-    updateFileRegistry(portable_root);
+    std::cout << "Updating file registries... ";
+    if(updateFileRegistry(local_root) && updateFileRegistry(portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
 
     // Sync files
-    exportFiles(local_root, portable_root);
-    importFiles(local_root, portable_root);
+    std::cout << "Syncing files... ";
+    if(exportFiles(local_root, portable_root) && importFiles(local_root, portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
 
     // Sync requests
-    exportRequests(local_root, portable_root);
-    importRequests(local_root, portable_root);
-
-    std::cout << "Result: Success." << std::endl;
-}
-
-void Methods::updateFileRegistry(std::string root_directory) {
-	bool alreadyDiscovered, fileDiscovered;
-	Crypto aCrypto;
-	file_registry::Registry aFileRegistry;
-	std::string registry_file = root_directory + "/file_registry.proto";
-	std::string share_directory = root_directory + "/shared";
-
-	boost::filesystem::path share_path(share_directory);
-	boost::filesystem::directory_iterator iter(share_path), end;
-
-	// Load file registry
-	std::fstream fr_input(registry_file.c_str(), std::ios::in | std::ios::binary);
-	if(!aFileRegistry.ParseFromIstream(&fr_input)) {
-		std::cerr << "Failed to parse file registry." << std::endl;
-		return;
-	}
-	fr_input.close();
-
-	// Lookup each file in shared directory
-	for(;iter != end; ++iter) {
-		alreadyDiscovered = false;
-		std::string fileName = iter->path().filename().string();
-		std::string filePath = "/shared/" + fileName;
-		std::string fileHash = aCrypto.sha1sum(share_directory + "/" + fileName);
-
-		// Look up hash in file registry
-		for(int i = 0; i < aFileRegistry.file_size(); i++) {
-			const file_registry::File& aFile = aFileRegistry.file(i);
-			if(aFile.hash() == fileHash) {
-				alreadyDiscovered = true;
-				break;
-			}
-		}
-
-		if(!alreadyDiscovered) {
-			std::cout << fileHash + ": just discovered" << std::endl;
-			fileDiscovered = true;
-			file_registry::File *aFile = aFileRegistry.add_file();
-			aFile->set_active(true);
-			aFile->set_hash(fileHash);
-			aFile->set_name(fileName);
-			aFile->set_path(filePath);
-		} else {
-			std::cout << fileHash + ": already discovered" << std::endl;
-		}
-	}
-
-	if(fileDiscovered) {
-		std::fstream output(registry_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-	    if (!aFileRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Failed to write file registry." << std::endl;
-	    }
-	    output.close();
-	}
-}
-
-void Methods::updateRequestRegistry(std::string root_directory) {
-	request_registry::Registry newRequestRegistry;
-	request_registry::Registry oldRequestRegistry;
-    std::string rr_file = root_directory + "/request_registry.proto";
-
-    // Load request registry
-	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
-	if(!oldRequestRegistry.ParseFromIstream(&input)) {
-		std::cerr << "Unable to parse request registry" << std::endl;
-	}
-	input.close();
-
-	for(int i = 0; i < oldRequestRegistry.request_size(); i++) {
-		std::time_t t = std::time(0);
-		request_registry::Request *aRequest = oldRequestRegistry.mutable_request(i);
-		if(aRequest->timeout() > t) {
-			request_registry::Request *newRequest = newRequestRegistry.add_request();
-			newRequest->set_active(aRequest->active());
-			newRequest->set_hash(aRequest->hash());
-			newRequest->set_timeout(aRequest->timeout());
-		}
-	}
-
-    // Update request registry
-	std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-    if (!newRequestRegistry.SerializeToOstream(&output)) {
-    	std::cerr << "Failed to write request registry." << std::endl;
+    std::cout << "Syncing requests... ";
+    if(exportRequests(local_root, portable_root) && importRequests(local_root, portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
     }
-    output.close();
+
+    return "Result: Success.";
 }
 
 //
@@ -577,16 +606,21 @@ void Methods::showVersion() {
 }
 
 void Methods::sync() {
+    // Declare variables
 	std::string local_root;
 	std::string portable_root;
 
+    // Ask user for local directory
 	std::cout << "Enter local directory: ";
 	std::cin >> local_root;
+	std::cout << std::endl;
 
+    // Ask user for portable directory
 	std::cout << "Enter portable directory: ";
 	std::cin >> portable_root;
+	std::cout << std::endl;
 
-	sync(local_root, portable_root);
-	std::cout << "Result: Success." << std::endl;
+    std::cout << "Syncing directories..." << std::endl;
+	std::cout << sync(local_root, portable_root) << std::endl;
 	std::cout << std::endl;
 }
