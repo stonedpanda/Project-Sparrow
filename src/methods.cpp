@@ -313,7 +313,7 @@ void Methods::importRequests(std::string local_root_dir, std::string portable_ro
 	std::cout << "Result: Success." << std::endl;
 }
 
-void Methods::initDirectory(std::string root_directory) {
+std::string Methods::initDirectory(std::string root_directory) {
     // Declare variables
     FILE *pFile;
 	std::string fr_file = root_directory + "/file_registry.proto";
@@ -343,6 +343,8 @@ void Methods::initDirectory(std::string root_directory) {
         // Create share folder
 		boost::filesystem::create_directory(share_folder);
 	}
+
+	return "Result: Success.";
 }
 
 void Methods::sync(std::string local_root, std::string portable_root) {
@@ -491,11 +493,17 @@ void Methods::help() {
 }
 
 void Methods::initDirectory() {
-    std::string root_directory;
+    // Declare variables
+    std::string directory;
+
+    // Ask user for directory
     std::cout << "Enter directory: ";
-    std::cin >> root_directory;
-    initDirectory(root_directory);
-    std::cout << "Result: Success." << std::endl;
+    std::cin >> directory;
+    std::cout << std::endl;
+
+    // Initialize directory
+    std::cout << "Initializing directory..." << std::endl;
+    std::cout << initDirectory(directory) << std::endl;
     std::cout << std::endl;
 }
 
