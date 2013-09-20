@@ -473,6 +473,8 @@ void Methods::createRequest() {
     std::cin >> file_hash;
 
     createRequest(file_hash, root_directory);
+    std::cout << "Result: Success." << std::endl;
+    std::cout << std::endl;
 }
 
 void Methods::help() {
@@ -520,6 +522,7 @@ void Methods::listRequests() {
 	}
 
 	std::cout << "Result: Success." << std::endl;
+	std::cout << std::endl;
 }
 
 void Methods::sha1sum() {
@@ -536,6 +539,8 @@ void Methods::sha1sum() {
     std::cout << hash << std::endl;
     std::cout << std::endl;
     hash.clear();
+    std::cout << "Result: Success." << std::endl;
+    std::cout << std::endl;
 }
 
 void Methods::showVersion() {
@@ -557,4 +562,6 @@ void Methods::sync() {
 	std::cin >> portable_root;
 
 	sync(local_root, portable_root);
+	std::cout << "Result: Success." << std::endl;
+	std::cout << std::endl;
 }

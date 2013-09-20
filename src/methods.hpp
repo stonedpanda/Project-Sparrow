@@ -26,8 +26,10 @@ class Methods {
     private:
         void createRequest(std::string, std::string);
         void exportFiles(std::string, std::string);
+        void exportIndexes(std::string, std::string);
         void exportRequests(std::string, std::string);
         void importFiles(std::string, std::string);
+        void importIndexes(std::string, std::string);
         void importRequests(std::string, std::string);
         void initDirectory(std::string);
         void sync(std::string, std::string);
