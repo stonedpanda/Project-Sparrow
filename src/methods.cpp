@@ -13,24 +13,20 @@
 // Private Methods
 //
 
-void Methods::createRequest(std::string root_directory) {
+void Methods::createRequest(std::string file_hash, std::string root_directory) {
 	// Declare variables
 	bool alreadyRequested = false;
 	bool requestAdded = false;
 	request_registry::Registry aRequestRegistry;
 	std::string rr_file = root_directory + "/request_registry.proto";
 
-	// Read the existing request registry
+	// Load request registry
 	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-
 	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
 		std::cerr << "Failed to parse request registry." << std::endl;
 		return;
 	}
-
-	std::cout << "Add request: ";
-	std::string file_hash;
-	std::cin >> file_hash;
+	rr_input.close();
 
 	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
 		const request_registry::Request& aRequest = aRequestRegistry.request(i);
@@ -52,10 +48,12 @@ void Methods::createRequest(std::string root_directory) {
 	}
 
 	if(requestAdded) {
+        // Update request registry
 		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 	    if (!aRequestRegistry.SerializeToOstream(&output)) {
 	    	std::cerr << "Failed to write request registry." << std::endl;
 	    }
+	    output.close();
 	}
 }
 
@@ -460,12 +458,15 @@ void Methods::updateRequestRegistry(std::string root_directory) {
 
 void Methods::createRequest() {
     // Declare variables
-    std::string root_directory;
+    std::string file_hash, root_directory;
 
     std::cout << "Enter directory: ";
     std::cin >> root_directory;
 
-    createRequest(root_directory);
+    std::cout << "Enter file hash: ";
+    std::cin >> file_hash;
+
+    createRequest(file_hash, root_directory);
 }
 
 void Methods::help() {

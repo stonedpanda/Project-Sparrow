@@ -24,7 +24,7 @@
 
 class Methods {
     private:
-        void createRequest(std::string);
+        void createRequest(std::string, std::string);
         void exportFiles(std::string, std::string);
         void exportRequests(std::string, std::string);
         void importFiles(std::string, std::string);
