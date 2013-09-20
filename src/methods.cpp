@@ -13,6 +13,52 @@
 // Private Methods
 //
 
+void Methods::createRequest(std::string root_directory) {
+	// Declare variables
+	bool alreadyRequested = false;
+	bool requestAdded = false;
+	request_registry::Registry aRequestRegistry;
+	std::string rr_file = root_directory + "/request_registry.proto";
+
+	// Read the existing request registry
+	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
+
+	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
+		std::cerr << "Failed to parse request registry." << std::endl;
+		return;
+	}
+
+	std::cout << "Add request: ";
+	std::string file_hash;
+	std::cin >> file_hash;
+
+	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
+		const request_registry::Request& aRequest = aRequestRegistry.request(i);
+		if(aRequest.hash() == file_hash) {
+			alreadyRequested = true;
+		}
+	}
+
+	if(!alreadyRequested) {
+		std::time_t t = std::time(0);
+		int timeout = t + 1209600;	// 2 weeks
+		requestAdded = true;
+		request_registry::Request *aRequest = aRequestRegistry.add_request();
+		aRequest->set_active(true);
+		aRequest->set_hash(file_hash);
+		aRequest->set_timeout(timeout);
+	} else {
+		std::cout << file_hash + ": already requested" << std::endl;
+	}
+
+	if(requestAdded) {
+		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	    if (!aRequestRegistry.SerializeToOstream(&output)) {
+	    	std::cerr << "Failed to write request registry." << std::endl;
+	    }
+	}
+}
+
 void Methods::exportFiles(std::string local_root, std::string portable_root) {
 	// Declare variables
 	bool updateRequestRegistry = false;
@@ -413,54 +459,13 @@ void Methods::updateRequestRegistry(std::string root_directory) {
 //
 
 void Methods::createRequest() {
-	// Declare variables
-	bool alreadyRequested = false;
-	bool requestAdded = false;
-	request_registry::Registry aRequestRegistry;
+    // Declare variables
+    std::string root_directory;
 
-	std::cout << "Enter directory: ";
-	std::string root_directory;
-	std::cin >> root_directory;
+    std::cout << "Enter directory: ";
+    std::cin >> root_directory;
 
-	std::string rr_file = root_directory + "/request_registry.proto";
-
-	// Read the existing request registry
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-
-	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		std::cerr << "Failed to parse request registry." << std::endl;
-		return;
-	}
-
-	std::cout << "Add request: ";
-	std::string file_hash;
-	std::cin >> file_hash;
-
-	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
-		const request_registry::Request& aRequest = aRequestRegistry.request(i);
-		if(aRequest.hash() == file_hash) {
-			alreadyRequested = true;
-		}
-	}
-
-	if(!alreadyRequested) {
-		std::time_t t = std::time(0);
-		int timeout = t + 1209600;	// 2 weeks
-		requestAdded = true;
-		request_registry::Request *aRequest = aRequestRegistry.add_request();
-		aRequest->set_active(true);
-		aRequest->set_hash(file_hash);
-		aRequest->set_timeout(timeout);
-	} else {
-		std::cout << file_hash + ": already requested" << std::endl;
-	}
-
-	if(requestAdded) {
-		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-	    if (!aRequestRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Failed to write request registry." << std::endl;
-	    }
-	}
+    createRequest(root_directory);
 }
 
 void Methods::help() {
