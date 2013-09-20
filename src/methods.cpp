@@ -347,6 +347,25 @@ std::string Methods::initDirectory(std::string root_directory) {
 	return "Result: Success.";
 }
 
+std::string Methods::listRequests(std::string root_directory) {
+    // Declare variables
+	request_registry::Registry aRequestRegistry;
+	std::string rr_file = root_directory + "/request_registry.proto";
+
+    // Load request registry
+	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	if(!aRequestRegistry.ParseFromIstream(&input)) {
+		return "Error: Unable to load request registry.";
+	}
+	input.close();
+
+	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
+		const request_registry::Request &aRequest = aRequestRegistry.request(i);
+		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
+	}
+	return "Result: Success.";
+}
+
 void Methods::sync(std::string local_root, std::string portable_root) {
     std::cout << "Syncing directories..." << std::endl;
 
@@ -508,31 +527,18 @@ void Methods::initDirectory() {
 }
 
 void Methods::listRequests() {
-    std::string root_directory;
+    // Declare variables
+    std::string directory;
 
+    // Ask user for directory
     std::cout << "Enter directory: ";
-    std::cin >> root_directory;
+    std::cin >> directory;
+    std::cout << std::endl;
 
+    // List requests
     std::cout << "Listing requests..." << std::endl;
-    listRequests(root_directory);
-    std::cout << "Result: Success." << std::endl;
-}
-
-void Methods::listRequests(std::string root_directory) {
-	request_registry::Registry aRequestRegistry;
-	std::string rr_file = root_directory + "/request_registry.proto";
-
-    // Load request registry
-	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
-	if(!aRequestRegistry.ParseFromIstream(&input)) {
-		std::cerr << "Unable to parse request registry" << std::endl;
-	}
-	input.close();
-
-	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
-		const request_registry::Request &aRequest = aRequestRegistry.request(i);
-		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
-	}
+    std::cout << listRequests(directory) << std::endl;
+    std::cout << std::endl;
 }
 
 void Methods::sha1sum() {

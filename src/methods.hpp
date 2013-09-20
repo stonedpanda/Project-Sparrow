@@ -32,7 +32,7 @@ class Methods {
         void importIndexes(std::string, std::string);
         void importRequests(std::string, std::string);
         std::string initDirectory(std::string);
-        void listRequests(std::string);
+        std::string listRequests(std::string);
         void sync(std::string, std::string);
         void updateFileRegistry(std::string);
         void updateRequestRegistry(std::string);
