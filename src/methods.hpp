@@ -24,7 +24,7 @@
 
 class Methods {
     private:
-        void createRequest(std::string, std::string);
+        std::string createRequest(std::string, std::string);
         void exportFiles(std::string, std::string);
         void exportIndexes(std::string, std::string);
         void exportRequests(std::string, std::string);
@@ -32,6 +32,7 @@ class Methods {
         void importIndexes(std::string, std::string);
         void importRequests(std::string, std::string);
         void initDirectory(std::string);
+        void listRequests(std::string);
         void sync(std::string, std::string);
         void updateFileRegistry(std::string);
         void updateRequestRegistry(std::string);

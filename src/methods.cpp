@@ -13,7 +13,7 @@
 // Private Methods
 //
 
-void Methods::createRequest(std::string file_hash, std::string root_directory) {
+std::string Methods::createRequest(std::string file_hash, std::string root_directory) {
 	// Declare variables
 	bool alreadyRequested = false;
 	bool requestAdded = false;
@@ -23,8 +23,7 @@ void Methods::createRequest(std::string file_hash, std::string root_directory) {
 	// Load request registry
 	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
 	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		std::cerr << "Failed to parse request registry." << std::endl;
-		return;
+		return "Error: Failed to load request registry.";
 	}
 	rr_input.close();
 
@@ -51,10 +50,11 @@ void Methods::createRequest(std::string file_hash, std::string root_directory) {
         // Update request registry
 		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 	    if (!aRequestRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Failed to write request registry." << std::endl;
+	    	return "Error: Failed to update request registry.";
 	    }
 	    output.close();
 	}
+	return "Result: Success.";
 }
 
 void Methods::exportFiles(std::string local_root, std::string portable_root) {
@@ -464,16 +464,17 @@ void Methods::updateRequestRegistry(std::string root_directory) {
 
 void Methods::createRequest() {
     // Declare variables
-    std::string file_hash, root_directory;
+    std::string digest, directory;
 
+    // Ask user for directory
     std::cout << "Enter directory: ";
-    std::cin >> root_directory;
+    std::cin >> directory;
 
+    // Ask user for digest
     std::cout << "Enter file hash: ";
-    std::cin >> file_hash;
+    std::cin >> digest;
 
-    createRequest(file_hash, root_directory);
-    std::cout << "Result: Success." << std::endl;
+    std::cout << createRequest(digest, directory) << std::endl;
     std::cout << std::endl;
 }
 
@@ -499,53 +500,52 @@ void Methods::initDirectory() {
 }
 
 void Methods::listRequests() {
-	std::string root_directory;
-	std::string rr_file;
+    std::string root_directory;
+
+    std::cout << "Enter directory: ";
+    std::cin >> root_directory;
+
+    std::cout << "Listing requests..." << std::endl;
+    listRequests(root_directory);
+    std::cout << "Result: Success." << std::endl;
+}
+
+void Methods::listRequests(std::string root_directory) {
 	request_registry::Registry aRequestRegistry;
+	std::string rr_file = root_directory + "/request_registry.proto";
 
-	std::cout << "Enter directory: ";
-	std::cin >> root_directory;
-
-	std::cout << "Listing requests..." << std::endl;
-
-	rr_file = root_directory + "/request_registry.proto";
-
+    // Load request registry
 	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
-
 	if(!aRequestRegistry.ParseFromIstream(&input)) {
 		std::cerr << "Unable to parse request registry" << std::endl;
 	}
+	input.close();
 
 	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
 		const request_registry::Request &aRequest = aRequestRegistry.request(i);
 		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
 	}
-
-	std::cout << "Result: Success." << std::endl;
-	std::cout << std::endl;
 }
 
 void Methods::sha1sum() {
-    std::string hash, path;
-
-    std::cout << "Enter path: ";
-    std::cin >> path;
-
-    std::cout << std::endl;
-    std::cout << "Calculating digest..." << std::endl;
-
     Crypto aCrypto;
-    hash = aCrypto.sha1sum(path);
-    std::cout << hash << std::endl;
+    std::string path;
+
+    // Ask user for file location
+    std::cout << "Enter file location: ";
+    std::cin >> path;
     std::cout << std::endl;
-    hash.clear();
+
+    // Calculate digest
+    std::cout << "Calculating digest..." << std::endl;
+    std::cout << aCrypto.sha1sum(path) << std::endl;
     std::cout << "Result: Success." << std::endl;
     std::cout << std::endl;
 }
 
 void Methods::showVersion() {
     std::cout << "Created: Aug 20, 2012" << std::endl;
-    std::cout << "Updated: Sep 17, 2013" << std::endl;
+    std::cout << "Updated: Sep 20, 2013" << std::endl;
     std::cout << "Version: 0.2" << std::endl;
     std::cout << std::endl;
     std::cout << "Press enter to continue." << std::endl;
