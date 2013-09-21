@@ -21,12 +21,9 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
 	request_registry::Request *aRequest;
-	std::string actual_hash;
+	std::string actual_hash, file_path;
 	std::string fr_file = local_root + "/file_registry.proto";
 	std::string rr_file = portable_root + "/request_registry.proto";
-	std::string file_path;
-
-	std::cout << "Exporting files..." << std::endl;
 
 	// Load file registry
 	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
@@ -90,11 +87,9 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
 	request_registry::Request *aRequest;
-	std::string file_path;
+	std::string actual_hash, file_path;
     std::string fr_file = portable_root + "/file_registry.proto";
 	std::string rr_file = local_root + "/request_registry.proto";
-
-	std::cout << "Importing files..." << std::endl;
 
     // Load file registry
 	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
@@ -119,7 +114,7 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 			for(int j = 0; j < aFileRegistry.file_size(); j++) {
 				const file_registry::File& aFile = aFileRegistry.file(j);
 				if(aFile.hash() == aRequest->hash()) {
-					std::string actual_hash = aCrypto.sha1sum(portable_root + aFile.path());
+					actual_hash = aCrypto.sha1sum(portable_root + aFile.path());
 
 					if(aFile.hash() == actual_hash) {
 						boost::filesystem::copy_file(
@@ -130,7 +125,7 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 						aRequest->set_active(false);
 						updateRequestRegistry = true;
 					} else {
-						std::cout << "Error: Invalid hash." << std::endl;
+						std::cerr << "Error: Invalid hash." << std::endl;
 					}
 				}
 			}
@@ -150,13 +145,12 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 }
 
 bool Methods::exportRequests(std::string local_root_dir, std::string portable_root_dir) {
+    // Declare variables
 	bool requestFound = false;
 	bool updatePortable = false;
 	request_registry::Registry localRequestRegistry, portableRequestRegistry;
 	std::string local_file = local_root_dir + "/request_registry.proto";
 	std::string portable_file = portable_root_dir + "/request_registry.proto";
-
-	std::cout << "Exporting requests..." << std::endl;
 
 	// Load local request registry
 	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
@@ -177,8 +171,6 @@ bool Methods::exportRequests(std::string local_root_dir, std::string portable_ro
 	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
 		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
 		requestFound = false;
-
-		std::cout << aLocalRequest->hash() << aLocalRequest->active() << std::endl;
 
 		if(aLocalRequest->active()) {
 			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
@@ -217,8 +209,6 @@ bool Methods::importRequests(std::string local_root_dir, std::string portable_ro
 	request_registry::Registry localRequestRegistry, portableRequestRegistry;
 	std::string local_file = local_root_dir + "/request_registry.proto";
 	std::string portable_file = portable_root_dir + "/request_registry.proto";
-
-	std::cout << "Importing requests... " << std::endl;
 
 	// Load local request registry
 	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
@@ -314,7 +304,7 @@ bool Methods::updateFileRegistry(std::string root_directory) {
 			aFile->set_name(fileName);
 			aFile->set_path(filePath);
 		} else {
-			std::cout << fileHash + ": already discovered" << std::endl;
+//			std::cout << fileHash + ": already discovered" << std::endl;
 		}
 	}
 
@@ -367,7 +357,7 @@ bool Methods::updateRequestRegistry(std::string root_directory) {
 // Protected Methods
 //
 
-std::string Methods::createRequest(std::string file_hash, std::string root_directory) {
+bool Methods::createRequest(std::string file_hash, std::string root_directory) {
 	// Declare variables
 	bool alreadyRequested = false;
 	bool requestAdded = false;
@@ -377,7 +367,8 @@ std::string Methods::createRequest(std::string file_hash, std::string root_direc
 	// Load request registry
 	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
 	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		return "Error: Failed to load request registry.";
+		std::cerr << "Error: Failed to load request registry." << std::endl;
+		return false;
 	}
 	rr_input.close();
 
@@ -397,18 +388,19 @@ std::string Methods::createRequest(std::string file_hash, std::string root_direc
 		aRequest->set_hash(file_hash);
 		aRequest->set_timeout(timeout);
 	} else {
-		std::cout << file_hash + ": already requested" << std::endl;
+//		std::cout << file_hash + ": already requested" << std::endl;
 	}
 
 	if(requestAdded) {
         // Update request registry
 		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 	    if (!aRequestRegistry.SerializeToOstream(&output)) {
-	    	return "Error: Failed to update request registry.";
+	    	std::cerr << "Error: Failed to update request registry." << std::endl;
+	    	return false;
 	    }
 	    output.close();
 	}
-	return "Result: Success.";
+	return true;
 }
 
 bool Methods::initDirectory(std::string root_directory) {
@@ -441,11 +433,10 @@ bool Methods::initDirectory(std::string root_directory) {
         // Create share folder
 		boost::filesystem::create_directory(share_folder);
 	}
-
 	return true;
 }
 
-std::string Methods::listRequests(std::string root_directory) {
+bool Methods::listRequests(std::string root_directory) {
     // Declare variables
 	request_registry::Registry aRequestRegistry;
 	std::string rr_file = root_directory + "/request_registry.proto";
@@ -453,7 +444,8 @@ std::string Methods::listRequests(std::string root_directory) {
     // Load request registry
 	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
 	if(!aRequestRegistry.ParseFromIstream(&input)) {
-		return "Error: Unable to load request registry.";
+		std::cerr << "Error: Unable to load request registry." << std::endl;
+		return false;
 	}
 	input.close();
 
@@ -461,24 +453,25 @@ std::string Methods::listRequests(std::string root_directory) {
 		const request_registry::Request &aRequest = aRequestRegistry.request(i);
 		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
 	}
-	return "Result: Success.";
+	return true;
 }
 
-std::string Methods::sha1sum(std::string path) {
+bool Methods::sha1sum(std::string path) {
     //Declare variables
     Crypto aCrypto;
 
     std::cout << aCrypto.sha1sum(path) << std::endl;
-    return "Result: Success.";
+    return true;
 }
 
-std::string Methods::sync(std::string local_root, std::string portable_root) {
+bool Methods::sync(std::string local_root, std::string portable_root) {
     // Initialize directories
     std::cout << "Initializing directories... ";
     if(initDirectory(local_root) && initDirectory(portable_root)) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+        return false;
     }
 
     // Update request registries
@@ -487,6 +480,7 @@ std::string Methods::sync(std::string local_root, std::string portable_root) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+        return false;
     }
 
     // Update file registries
@@ -495,6 +489,7 @@ std::string Methods::sync(std::string local_root, std::string portable_root) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+        return false;
     }
 
     // Sync files
@@ -503,6 +498,7 @@ std::string Methods::sync(std::string local_root, std::string portable_root) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+        return false;
     }
 
     // Sync requests
@@ -511,9 +507,10 @@ std::string Methods::sync(std::string local_root, std::string portable_root) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+        return false;
     }
 
-    return "Result: Success.";
+    return true;
 }
 
 //
@@ -535,8 +532,12 @@ void Methods::createRequest() {
     std::cout << std::endl;
 
     // Create request
-    std::cout << "Creating request..." << std::endl;
-    std::cout << createRequest(digest, directory) << std::endl;
+    std::cout << "Creating request... ";
+    if(createRequest(digest, directory)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
     std::cout << std::endl;
 }
 
@@ -562,8 +563,12 @@ void Methods::initDirectory() {
     std::cout << std::endl;
 
     // Initialize directory
-    std::cout << "Initializing directory..." << std::endl;
-    std::cout << initDirectory(directory) << std::endl;
+    std::cout << "Initializing directory... ";
+    if(initDirectory(directory)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
     std::cout << std::endl;
 }
 
@@ -578,7 +583,11 @@ void Methods::listRequests() {
 
     // List requests
     std::cout << "Listing requests..." << std::endl;
-    std::cout << listRequests(directory) << std::endl;
+    if(listRequests(directory)) {
+        std::cout << "Result: Success." << std::endl;
+    } else {
+        std::cerr << "Result: Error." << std::endl;
+    }
     std::cout << std::endl;
 }
 
@@ -593,7 +602,11 @@ void Methods::sha1sum() {
 
     // Calculate digest
     std::cout << "Calculating digest..." << std::endl;
-    std::cout << sha1sum(path) << std::endl;
+    if(sha1sum(path)) {
+        std::cout << "Result: Success." << std::endl;
+    } else {
+        std::cerr << "Result: Error." << std::endl;
+    }
     std::cout << std::endl;
 }
 
@@ -621,6 +634,10 @@ void Methods::sync() {
 	std::cout << std::endl;
 
     std::cout << "Syncing directories..." << std::endl;
-	std::cout << sync(local_root, portable_root) << std::endl;
+	if(sync(local_root, portable_root)) {
+        std::cout << "Result: Success." << std::endl;
+	} else {
+        std::cerr << "Result: Error." << std::endl;
+	}
 	std::cout << std::endl;
 }

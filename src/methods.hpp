@@ -34,11 +34,11 @@ class Methods {
         bool updateRequestRegistry(std::string);
         bool updateSearchIndex(std::string);
     protected:
-        std::string createRequest(std::string, std::string);
+        bool createRequest(std::string, std::string);
         bool initDirectory(std::string);
-        std::string listRequests(std::string);
-        std::string sha1sum(std::string);
-        std::string sync(std::string, std::string);
+        bool listRequests(std::string);
+        bool sha1sum(std::string);
+        bool sync(std::string, std::string);
     public:
         void createRequest();
         void help();
