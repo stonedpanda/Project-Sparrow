@@ -22,7 +22,8 @@ Console::Console() {
 	s_mapCommandValues["create"] = cvCreateRequest;
 	s_mapCommandValues["help"] = cvDisplayHelp;
 	s_mapCommandValues["init"] = cvInitDirectory;
-	s_mapCommandValues["list"] = cvListRequests;
+	s_mapCommandValues["listIndexes"] = cvListIndexes;
+	s_mapCommandValues["listRequests"] = cvListRequests;
 	s_mapCommandValues["quit"] = cvQuitProgram;
 	s_mapCommandValues["search"] = cvFindFile;
 	s_mapCommandValues["sha1sum"] = cvCalculateHash;
@@ -57,6 +58,9 @@ void Console::run() {
                 break;
             case cvInitDirectory:
                 aMethod.initDirectory();
+                break;
+            case cvListIndexes:
+                aMethod.listIndexes();
                 break;
             case cvListRequests:
                 aMethod.listRequests();

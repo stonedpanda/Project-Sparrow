@@ -13,6 +13,7 @@
 #include "crypto.hpp"
 #include "file_registry.pb.h"
 #include "request_registry.pb.h"
+#include "search_index.pb.h"
 
 // Load 3rd-party libraries
 #include <boost/filesystem.hpp>
@@ -37,6 +38,7 @@ class Methods {
         bool createRequest(std::string, std::string);
         bool findFile(std::string);
         bool initDirectory(std::string);
+        bool listIndexes(std::string);
         bool listRequests(std::string);
         bool sha1sum(std::string);
         bool sync(std::string, std::string);
@@ -45,6 +47,7 @@ class Methods {
         void findFile();
         void help();
         void initDirectory();
+        void listIndexes();
         void listRequests();
         void sha1sum();
         void showVersion();

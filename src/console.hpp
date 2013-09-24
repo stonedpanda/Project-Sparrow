@@ -27,6 +27,7 @@ class Console {
             cvDisplayHelp,
             cvFindFile,
             cvInitDirectory,
+            cvListIndexes,
             cvListRequests,
             cvQuitProgram,
             cvShowVersion,

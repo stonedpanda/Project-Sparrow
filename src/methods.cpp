@@ -362,7 +362,81 @@ bool Methods::updateRequestRegistry(std::string root_directory) {
 }
 
 bool Methods::updateSearchIndex(std::string root_directory) {
-    return true;
+    // Declare variables
+	bool alreadyDiscovered, fileDiscovered;
+	Crypto aCrypto;
+//	file_registry::Registry aFileRegistry;
+    search_index::Index aSearchIndex;
+//	std::string registry_file = root_directory + "/file_registry.proto";
+    std::string index_file = root_directory + "/search_index.proto";
+	std::string share_directory = root_directory + "/shared";
+
+	boost::filesystem::path share_path(share_directory);
+	boost::filesystem::directory_iterator iter(share_path), end;
+
+	// Load search index
+//	std::fstream fr_input(registry_file.c_str(), std::ios::in | std::ios::binary);
+    std::fstream si_input(index_file.c_str(), std::ios::in | std::ios::binary);
+//	if(!aFileRegistry.ParseFromIstream(&fr_input)) {
+    if(!aSearchIndex.ParseFromIstream(&si_input)) {
+//		std::cerr << "Error: Failed to load file registry." << std::endl;
+        std::cerr << "Error: Failed to load search index." << std::endl;
+		return false;
+	}
+//	fr_input.close();
+    si_input.close();
+
+	// Lookup each file in shared directory
+	for(;iter != end; ++iter) {
+		alreadyDiscovered = false;
+		std::string fileName = iter->path().filename().string();
+		std::string filePath = "/shared/" + fileName;
+		std::string fileHash = aCrypto.sha1sum(share_directory + "/" + fileName);
+		int fileSize = boost::filesystem::file_size(share_directory + "/" + fileName);
+		std::string fileType = boost::filesystem::extension(filePath);
+
+		boost::filesystem::path aPath(share_directory + "/" + fileName);
+		std::string stem = aPath.stem().string();
+
+		// Look up hash in search index
+//		for(int i = 0; i < aFileRegistry.file_size(); i++) {
+        for(int i = 0; i < aSearchIndex.file_size(); i++) {
+//			const file_registry::File& aFile = aFileRegistry.file(i);
+            const search_index::File& aFile = aSearchIndex.file(i);
+			if(aFile.hash() == fileHash) {
+				alreadyDiscovered = true;
+				break;
+			}
+		}
+
+		if(!alreadyDiscovered) {
+			std::cout << fileHash + ": just discovered" << std::endl;
+			fileDiscovered = true;
+//			file_registry::File *aFile = aFileRegistry.add_file();
+            search_index::File *aFile = aSearchIndex.add_file();
+//			aFile->set_active(true);
+			aFile->set_hash(fileHash);
+			aFile->set_name(stem);
+//			aFile->set_path(filePath);
+            aFile->set_size(fileSize);
+            aFile->set_type(fileType);
+		} else {
+//			std::cout << fileHash + ": already discovered" << std::endl;
+		}
+    }
+
+    if(fileDiscovered) {
+//        std::fstream output(registry_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+        std::fstream output(index_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+//        if (!aFileRegistry.SerializeToOstream(&output)) {
+        if(!aSearchIndex.SerializeToOstream(&output)) {
+//            std::cerr << "Error: Failed to update file registry." << std::endl;
+            std::cerr << "Error: Failed to update search index." << std::endl;
+            return false;
+        }
+        output.close();
+	}
+	return true;
 }
 
 //
@@ -424,6 +498,7 @@ bool Methods::initDirectory(std::string root_directory) {
     FILE *pFile;
 	std::string fr_file = root_directory + "/file_registry.proto";
 	std::string rr_file = root_directory + "/request_registry.proto";
+	std::string si_file = root_directory + "/search_index.proto";
 	std::string share_folder = root_directory + "/shared";
 
     // Check for file registry
@@ -444,10 +519,47 @@ bool Methods::initDirectory(std::string root_directory) {
 		}
 	}
 
+	// Check for search index
+	if(!boost::filesystem::exists(si_file)) {
+        // Create search index
+        pFile = fopen(si_file.c_str(), "w");
+        if(pFile != NULL) {
+            fclose(pFile);
+        }
+	}
+
     // Check for share folder
 	if(!boost::filesystem::is_directory(share_folder)) {
         // Create share folder
 		boost::filesystem::create_directory(share_folder);
+	}
+	return true;
+}
+
+bool Methods::listIndexes(std::string root_directory) {
+    // Declare variables
+//	request_registry::Registry aRequestRegistry;
+    search_index::Index aSearchIndex;
+//	std::string rr_file = root_directory + "/request_registry.proto";
+    std::string si_file = root_directory + "/search_index.proto";
+
+    // Load request registry
+//	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
+    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
+//	if(!aRequestRegistry.ParseFromIstream(&input)) {
+    if(!aSearchIndex.ParseFromIstream(&input)) {
+//		std::cerr << "Error: Unable to load request registry." << std::endl;
+        std::cerr << "Error: Unable to load search index." << std::endl;
+		return false;
+	}
+	input.close();
+
+//	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
+    for(int i = 0; i < aSearchIndex.file_size(); i++) {
+//		const request_registry::Request &aRequest = aRequestRegistry.request(i);
+        const search_index::File &aFile = aSearchIndex.file(i);
+//		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
+        std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
 	}
 	return true;
 }
@@ -619,6 +731,25 @@ void Methods::initDirectory() {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void Methods::listIndexes() {
+    // Declare variables
+    std::string directory;
+
+    // Ask user for directory
+    std::cout << "Enter directory: ";
+    std::cin >> directory;
+    std::cout << std::endl;
+
+    // List indexes
+    std::cout << "Listing indexes..." << std::endl;
+    if(listIndexes(directory)) {
+        std::cout << "Result: Success." << std::endl;
+    } else {
+        std::cerr << "Result: Error." << std::endl;
     }
     std::cout << std::endl;
 }
