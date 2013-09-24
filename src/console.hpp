@@ -25,6 +25,7 @@ class Console {
             cvCalculateHash,
             cvCreateRequest,
             cvDisplayHelp,
+            cvFindFile,
             cvInitDirectory,
             cvListRequests,
             cvQuitProgram,

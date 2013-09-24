@@ -24,6 +24,7 @@ Console::Console() {
 	s_mapCommandValues["init"] = cvInitDirectory;
 	s_mapCommandValues["list"] = cvListRequests;
 	s_mapCommandValues["quit"] = cvQuitProgram;
+	s_mapCommandValues["search"] = cvFindFile;
 	s_mapCommandValues["sha1sum"] = cvCalculateHash;
 	s_mapCommandValues["sync"] = cvSyncDirectories;
 	s_mapCommandValues["version"] = cvShowVersion;
@@ -32,7 +33,8 @@ Console::Console() {
 void Console::run() {
 	Methods aMethod;
 
-	std::cout << "Project Sparrow | Offline File-Sharing Program\n" << std::endl;
+	std::cout << "Project Sparrow | Offline File-Sharing Program" << std::endl;
+	std::cout << std::endl;
 
 	while(running) {
 		std::cout << "Command: ";
@@ -49,6 +51,9 @@ void Console::run() {
                 break;
             case cvDisplayHelp:
                 aMethod.help();
+                break;
+            case cvFindFile:
+                aMethod.findFile();
                 break;
             case cvInitDirectory:
                 aMethod.initDirectory();

@@ -10,7 +10,9 @@
 #include "console.hpp"
 
 int main() {
+    // Declare variables
 	Console aConsole;
+
 	aConsole.run();
 	return 0;
 }

@@ -46,13 +46,16 @@
 				<Option compiler="mingw32_compiler_x86" />
 				<Compiler>
 					<Add option="-g" />
+					<Add option="-Bstatic" />
+					<Add option="-MT" />
+					<Add directory="/home/jholz/Libraries/cryptopp_5.2.3/Include" />
 				</Compiler>
 				<Linker>
-					<Add option="-lcrypto++" />
 					<Add option="-lboost_filesystem" />
 					<Add option="-lboost_system" />
 					<Add option="-lprotobuf" />
 					<Add option="-lpthread" />
+					<Add directory="/home/jholz/Libraries/cryptopp_5.2.3/Release" />
 				</Linker>
 			</Target>
 			<Target title="Windows - Release">

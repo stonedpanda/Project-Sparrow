@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
-	<ActiveTarget name="Windows - Debug" />
-	<File name="src/crypto.hpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<ActiveTarget name="Linux - Debug" />
+	<File name="src/methods.hpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="483" topLine="0" />
+			<Cursor1 position="1350" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="src/console.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2308" topLine="26" />
+		</Cursor>
+	</File>
+	<File name="src/methods.cpp" open="1" top="1" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="20341" topLine="608" />
 		</Cursor>
 	</File>
 	<File name="src/ProjectSparrow.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -11,24 +21,14 @@
 			<Cursor1 position="437" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src/console.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="473" topLine="7" />
-		</Cursor>
-	</File>
 	<File name="src/crypto.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="451" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src/methods.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/crypto.hpp" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4150" topLine="103" />
-		</Cursor>
-	</File>
-	<File name="src/console.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2289" topLine="0" />
+			<Cursor1 position="719" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src/file_registry.pb.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -36,9 +36,9 @@
 			<Cursor1 position="214" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src/methods.hpp" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/console.hpp" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1334" topLine="12" />
+			<Cursor1 position="561" topLine="0" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>

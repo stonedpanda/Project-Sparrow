@@ -80,6 +80,68 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
     return true;
 }
 
+bool Methods::exportIndexes(std::string local_root, std::string portable_root) {
+    return true;
+}
+
+bool Methods::exportRequests(std::string local_root_dir, std::string portable_root_dir) {
+    // Declare variables
+	bool requestFound = false;
+	bool updatePortable = false;
+	request_registry::Registry localRequestRegistry, portableRequestRegistry;
+	std::string local_file = local_root_dir + "/request_registry.proto";
+	std::string portable_file = portable_root_dir + "/request_registry.proto";
+
+	// Load local request registry
+	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
+	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
+		std::cerr << "Error: Failed to load local request registry." << std::endl;
+		return false;
+	}
+	local_input.close();
+
+	// Load portable request registry
+	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
+	if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
+		std::cerr << "Error: Failed to load portable request registry." << std::endl;
+		return false;
+	}
+	portable_input.close();
+
+	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
+		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
+		requestFound = false;
+
+		if(aLocalRequest->active()) {
+			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
+				const request_registry::Request& aPortableRequest = portableRequestRegistry.request(j);
+				if(aLocalRequest->hash() == aPortableRequest.hash()) {
+					requestFound = true;
+				}
+			}
+
+			if(!requestFound) {
+				request_registry::Request *aRequest = portableRequestRegistry.add_request();
+				aRequest->set_active(true);
+				aRequest->set_hash(aLocalRequest->hash());
+				aRequest->set_timeout(aLocalRequest->timeout());
+				updatePortable = true;
+			}
+		}
+	}
+
+	if(updatePortable) {
+        // Update portable request registry
+		std::fstream output(portable_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	    if (!portableRequestRegistry.SerializeToOstream(&output)) {
+	    	std::cerr << "Error: Failed to update request registry." << std::endl;
+            return false;
+	    }
+	    output.close();
+	}
+    return true;
+}
+
 bool Methods::importFiles(std::string local_root, std::string portable_root) {
     // Declare variables
     bool updateRequestRegistry = false;
@@ -144,61 +206,7 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
     return true;
 }
 
-bool Methods::exportRequests(std::string local_root_dir, std::string portable_root_dir) {
-    // Declare variables
-	bool requestFound = false;
-	bool updatePortable = false;
-	request_registry::Registry localRequestRegistry, portableRequestRegistry;
-	std::string local_file = local_root_dir + "/request_registry.proto";
-	std::string portable_file = portable_root_dir + "/request_registry.proto";
-
-	// Load local request registry
-	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
-	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
-		std::cerr << "Error: Failed to load local request registry." << std::endl;
-		return false;
-	}
-	local_input.close();
-
-	// Load portable request registry
-	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
-	if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
-		std::cerr << "Error: Failed to load portable request registry." << std::endl;
-		return false;
-	}
-	portable_input.close();
-
-	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
-		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
-		requestFound = false;
-
-		if(aLocalRequest->active()) {
-			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
-				const request_registry::Request& aPortableRequest = portableRequestRegistry.request(j);
-				if(aLocalRequest->hash() == aPortableRequest.hash()) {
-					requestFound = true;
-				}
-			}
-
-			if(!requestFound) {
-				request_registry::Request *aRequest = portableRequestRegistry.add_request();
-				aRequest->set_active(true);
-				aRequest->set_hash(aLocalRequest->hash());
-				aRequest->set_timeout(aLocalRequest->timeout());
-				updatePortable = true;
-			}
-		}
-	}
-
-	if(updatePortable) {
-        // Update portable request registry
-		std::fstream output(portable_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-	    if (!portableRequestRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Error: Failed to update request registry." << std::endl;
-            return false;
-	    }
-	    output.close();
-	}
+bool Methods::importIndexes(std::string local_root, std::string portable_root) {
     return true;
 }
 
@@ -353,6 +361,10 @@ bool Methods::updateRequestRegistry(std::string root_directory) {
     return true;
 }
 
+bool Methods::updateSearchIndex(std::string root_directory) {
+    return true;
+}
+
 //
 // Protected Methods
 //
@@ -401,6 +413,10 @@ bool Methods::createRequest(std::string file_hash, std::string root_directory) {
 	    output.close();
 	}
 	return true;
+}
+
+bool Methods::findFile(std::string query) {
+    return true;
 }
 
 bool Methods::initDirectory(std::string root_directory) {
@@ -492,6 +508,15 @@ bool Methods::sync(std::string local_root, std::string portable_root) {
         return false;
     }
 
+    // Updating search registries
+    std::cout << "Updating search indexes... ";
+    if(updateSearchIndex(local_root) && updateSearchIndex(portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+        return false;
+    }
+
     // Sync files
     std::cout << "Syncing files... ";
     if(exportFiles(local_root, portable_root) && importFiles(local_root, portable_root)) {
@@ -508,6 +533,13 @@ bool Methods::sync(std::string local_root, std::string portable_root) {
     } else {
         std::cerr << "Error." << std::endl;
         return false;
+    }
+
+    std::cout << "Syncing indexes... ";
+    if(exportIndexes(local_root, portable_root) && importIndexes(local_root, portable_root)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
     }
 
     return true;
@@ -534,6 +566,25 @@ void Methods::createRequest() {
     // Create request
     std::cout << "Creating request... ";
     if(createRequest(digest, directory)) {
+        std::cout << "Success." << std::endl;
+    } else {
+        std::cerr << "Error." << std::endl;
+    }
+    std::cout << std::endl;
+}
+
+void Methods::findFile() {
+    // Declare variables
+    std::string query;
+
+    // Ask user for query
+    std::cout << "Enter query: ";
+    std::cin >> query;
+    std::cout << std::endl;
+
+    // Executing search query
+    std::cout << "Finding file... ";
+    if(findFile(query)) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;

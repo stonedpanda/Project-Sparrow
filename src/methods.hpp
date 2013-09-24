@@ -35,12 +35,14 @@ class Methods {
         bool updateSearchIndex(std::string);
     protected:
         bool createRequest(std::string, std::string);
+        bool findFile(std::string);
         bool initDirectory(std::string);
         bool listRequests(std::string);
         bool sha1sum(std::string);
         bool sync(std::string, std::string);
     public:
         void createRequest();
+        void findFile();
         void help();
         void initDirectory();
         void listRequests();
