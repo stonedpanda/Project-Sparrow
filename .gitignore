@@ -1,3 +1,11 @@
+# Directories
+/bin
 /local
+/obj
 /portable
 /remote
+
+# Files
+Sparrow.cbp
+Sparrow.depend
+Sparrow.layout
