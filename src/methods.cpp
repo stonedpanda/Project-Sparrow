@@ -16,7 +16,7 @@
 bool Methods::exportFiles(std::string local_root, std::string portable_root) {
     // Instantiate variables
     bool updateRequestRegistry;
-    Crypto aCrypto;
+    CryptoLibrary aCryptoLibrary;
     file_registry::File *aFile;
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
@@ -57,7 +57,7 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
 			for(int j = 0; j < aFileRegistry.file_size(); j++) {
 				aFile = aFileRegistry.mutable_file(j);
 				if(aFile->hash() == aRequest->hash()) {
-					actual_hash = aCrypto.sha1sum(local_root + "/" + aFile->path());
+					actual_hash = aCryptoLibrary.sha1sum(local_root + "/" + aFile->path());
 					if(aFile->hash() == actual_hash) {
 						boost::filesystem::copy_file(
 							local_root + aFile->path(),
@@ -209,7 +209,7 @@ bool Methods::exportRequests(std::string local_root_dir, std::string portable_ro
 bool Methods::importFiles(std::string local_root, std::string portable_root) {
     // Declare variables
     bool updateRequestRegistry = false;
-    Crypto aCrypto;
+    CryptoLibrary aCryptoLibrary;
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
 	request_registry::Request *aRequest;
@@ -240,7 +240,7 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 			for(int j = 0; j < aFileRegistry.file_size(); j++) {
 				const file_registry::File& aFile = aFileRegistry.file(j);
 				if(aFile.hash() == aRequest->hash()) {
-					actual_hash = aCrypto.sha1sum(portable_root + aFile.path());
+					actual_hash = aCryptoLibrary.sha1sum(portable_root + aFile.path());
 
 					if(aFile.hash() == actual_hash) {
 						boost::filesystem::copy_file(
@@ -388,7 +388,7 @@ bool Methods::importRequests(std::string local_root_dir, std::string portable_ro
 bool Methods::updateFileRegistry(std::string root_directory) {
     // Declare variables
 	bool alreadyDiscovered, fileDiscovered;
-	Crypto aCrypto;
+	CryptoLibrary aCryptoLibrary;
 	file_registry::Registry aFileRegistry;
 	std::string registry_file = root_directory + "/file_registry.proto";
 	std::string share_directory = root_directory + "/shared";
@@ -409,7 +409,7 @@ bool Methods::updateFileRegistry(std::string root_directory) {
 		alreadyDiscovered = false;
 		std::string fileName = iter->path().filename().string();
 		std::string filePath = "/shared/" + fileName;
-		std::string fileHash = aCrypto.sha1sum(share_directory + "/" + fileName);
+		std::string fileHash = aCryptoLibrary.sha1sum(share_directory + "/" + fileName);
 
 		// Look up hash in file registry
 		for(int i = 0; i < aFileRegistry.file_size(); i++) {
@@ -481,7 +481,7 @@ bool Methods::updateRequestRegistry(std::string root_directory) {
 bool Methods::updateSearchIndex(std::string root_directory) {
     // Declare variables
 	bool alreadyDiscovered, fileDiscovered;
-	Crypto aCrypto;
+	CryptoLibrary aCryptoLibrary;
     search_index::Index aSearchIndex;
     std::string index_file = root_directory + "/search_index.proto";
 	std::string share_directory = root_directory + "/shared";
@@ -502,7 +502,7 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 		alreadyDiscovered = false;
 		std::string fileName = iter->path().filename().string();
 		std::string filePath = "/shared/" + fileName;
-		std::string fileHash = aCrypto.sha1sum(share_directory + "/" + fileName);
+		std::string fileHash = aCryptoLibrary.sha1sum(share_directory + "/" + fileName);
 		int fileSize = boost::filesystem::file_size(share_directory + "/" + fileName);
 		std::string fileType = boost::filesystem::extension(filePath);
 
@@ -709,9 +709,9 @@ bool Methods::listRequests(std::string root_directory) {
 
 bool Methods::sha1sum(std::string path) {
     //Declare variables
-    Crypto aCrypto;
+    CryptoLibrary aCryptoLibrary;
 
-    std::cout << aCrypto.sha1sum(path) << std::endl;
+    std::cout << aCryptoLibrary.sha1sum(path) << std::endl;
     return true;
 }
 

@@ -10,7 +10,7 @@
 #define METHODS_HPP_
 
 // Load headers
-#include "crypto.hpp"
+#include "crypto_library.hpp"
 #include "file_registry.pb.h"
 #include "request_registry.pb.h"
 #include "search_index.pb.h"
