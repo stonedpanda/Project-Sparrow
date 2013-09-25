@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : methods.cpp
 // Author      : Justin Holz
-// Version     : 0.2
+// Version     : 0.3
 // Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
@@ -14,19 +14,27 @@
 //
 
 bool Methods::exportFiles(std::string local_root, std::string portable_root) {
-	// Declare variables
-	bool updateRequestRegistry = false;
-	Crypto aCrypto;
-	file_registry::File *aFile;
+    // Instantiate variables
+    bool updateRequestRegistry;
+    Crypto aCrypto;
+    file_registry::File *aFile;
 	file_registry::Registry aFileRegistry;
 	request_registry::Registry aRequestRegistry;
 	request_registry::Request *aRequest;
-	std::string actual_hash, file_path;
-	std::string fr_file = local_root + "/file_registry.proto";
-	std::string rr_file = portable_root + "/request_registry.proto";
+	std::string actual_hash, file_path, fr_filename, fr_path, rr_filename, rr_path;
+
+	// Set parent variables
+    updateRequestRegistry = false;
+	fr_filename = "file_registry.proto";
+	rr_filename = "request_registry.proto";
+
+
+	// Set child variables
+    fr_path = local_root + "/" + fr_filename;
+	rr_path = portable_root + "/" + rr_filename;
 
 	// Load file registry
-	std::fstream fr_input(fr_file.c_str(), std::ios::in | std::ios::binary);
+	std::fstream fr_input(fr_path.c_str(), std::ios::in | std::ios::binary);
     if(!aFileRegistry.ParseFromIstream(&fr_input)) {
 		std::cerr << "Error: Failed to load file registry" << std::endl;
 		return false;
@@ -34,7 +42,7 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
 	fr_input.close();
 
 	// Load request registry
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	std::fstream rr_input(rr_path.c_str(), std::ios::in | std::ios::binary);
 	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
 		std::cerr << "Error: Failed to load request registry" << std::endl;
 		return false;
@@ -69,7 +77,7 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
 
 	if(updateRequestRegistry) {
         // Update request registry
-		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+		std::fstream output(rr_path.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
 		if(!aRequestRegistry.SerializePartialToOstream(&output)) {
 			std::cerr << "Error: Failed to update request registry." << std::endl;
 			return false;
@@ -82,21 +90,15 @@ bool Methods::exportFiles(std::string local_root, std::string portable_root) {
 
 bool Methods::exportIndexes(std::string local_root, std::string portable_root) {
     // Declare variables
-//	bool requestFound = false;
     bool fileFound = false;
 	bool updatePortable = false;
-//	request_registry::Registry localRequestRegistry, portableRequestRegistry;
     search_index::Index localSearchIndex, portableSearchIndex;
-//	std::string local_file = local_root_dir + "/request_registry.proto";
     std::string local_file = local_root + "/search_index.proto";
-//	std::string portable_file = portable_root_dir + "/request_registry.proto";
     std::string portable_file = portable_root + "/search_index.proto";
 
 	// Load local search index
 	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
-//	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
     if(!localSearchIndex.ParseFromIstream(&local_input)) {
-//		std::cerr << "Error: Failed to load local request registry." << std::endl;
         std::cerr << "Error: Failed to load local search index." << std::endl;
 		return false;
 	}
@@ -104,59 +106,40 @@ bool Methods::exportIndexes(std::string local_root, std::string portable_root) {
 
 	// Load portable search index
 	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
-//	if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
     if(!portableSearchIndex.ParseFromIstream(&portable_input)) {
-//		std::cerr << "Error: Failed to load portable request registry." << std::endl;
         std::cerr << "Error: Failed to load portable search index." << std::endl;
 		return false;
 	}
 	portable_input.close();
 
-//	for(int i = 0; i< localRequestRegistry.request_size(); i++) {
     for(int i = 0; i < localSearchIndex.file_size(); i++) {
-//		request_registry::Request *aLocalRequest = localRequestRegistry.mutable_request(i);
         search_index::File *aLocalFile = localSearchIndex.mutable_file(i);
-//		requestFound = false;
         fileFound = false;
 
-//		if(aLocalRequest->active()) {
-//			for(int j = 0; j < portableRequestRegistry.request_size(); j++) {
         for(int j = 0; j < portableSearchIndex.file_size(); j++) {
-//				const request_registry::Request& aPortableRequest = portableRequestRegistry.request(j);
             const search_index::File& aPortableFile = portableSearchIndex.file(i);
-//				if(aLocalRequest->hash() == aPortableRequest.hash()) {
             if(aLocalFile->hash() == aPortableFile.hash()) {
-//					requestFound = true;
                     fileFound = true;
-//				}
+
             }
-//			}
+
         }
 
-//			if(!requestFound) {
         if(!fileFound) {
-//				request_registry::Request *aRequest = portableRequestRegistry.add_request();
             search_index::File *aFile = portableSearchIndex.add_file();
-//				aRequest->set_active(true);
-//				aRequest->set_hash(aLocalRequest->hash());
             aFile->set_hash(aLocalFile->hash());
-//				aRequest->set_timeout(aLocalRequest->timeout());
             aFile->set_name(aLocalFile->name());
             aFile->set_size(aLocalFile->size());
             aFile->set_type(aLocalFile->type());
-//				updatePortable = true;
             updatePortable = true;
-//			}
+
         }
-//      }
 	}
 
 	if(updatePortable) {
         // Update portable search index
 		std::fstream output(portable_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-//	    if (!portableRequestRegistry.SerializeToOstream(&output)) {
         if(!portableSearchIndex.SerializeToOstream(&output)) {
-//	    	std::cerr << "Error: Failed to update request registry." << std::endl;
             std::cerr << "Error: Failed to update search index." << std::endl;
             return false;
 	    }
@@ -289,21 +272,15 @@ bool Methods::importFiles(std::string local_root, std::string portable_root) {
 
 bool Methods::importIndexes(std::string local_root, std::string portable_root) {
     // Declare variables
-//	bool requestFound = false;
     bool fileFound = false;
 	bool updateLocal = false;
-//	request_registry::Registry localRequestRegistry, portableRequestRegistry;
     search_index::Index localSearchIndex, portableSearchIndex;
-//	std::string local_file = local_root_dir + "/request_registry.proto";
     std::string local_file = local_root + "/search_index.proto";
-//	std::string portable_file = portable_root_dir + "/request_registry.proto";
     std::string portable_file = portable_root + "/search_index.proto";
 
 	// Load local search index
 	std::fstream local_input(local_file.c_str(), std::ios::in | std::ios::binary);
-//	if(!localRequestRegistry.ParseFromIstream(&local_input)) {
     if(!localSearchIndex.ParseFromIstream(&local_input)) {
-//		std::cerr << "Error: Failed to load local request registry." << std::endl;
         std::cerr << "Error: Failed to load local search registry." << std::endl;
 		return false;
 	}
@@ -311,59 +288,37 @@ bool Methods::importIndexes(std::string local_root, std::string portable_root) {
 
 	// Load portable search index
 	std::fstream portable_input(portable_file.c_str(), std::ios::in | std::ios::binary);
-//    if(!portableRequestRegistry.ParseFromIstream(&portable_input)) {
     if(!portableSearchIndex.ParseFromIstream(&portable_input)) {
-//		std::cerr << "Error: Failed to load portable request registry." << std::endl;
         std::cerr << "Error: Failed to load portable search index." << std::endl;
 		return false;
 	}
 	portable_input.close();
 
-//	for(int i = 0; i < portableRequestRegistry.request_size(); i++) {
     for(int i = 0; i < portableSearchIndex.file_size(); i++) {
-//		request_registry::Request *aPortableRequest = portableRequestRegistry.mutable_request(i);
         search_index::File *aPortableFile = portableSearchIndex.mutable_file(i);
-//		requestFound = false;
         fileFound = false;
 
-//		if(aPortableRequest->active()) {
-//			for(int j = 0; j < localRequestRegistry.request_size(); j++) {
         for(int j = 0; j < localSearchIndex.file_size(); j++) {
-//				const request_registry::Request& aLocalRequest = localRequestRegistry.request(j);
             const search_index::File& aLocalFile = localSearchIndex.file(j);
-//				if(aLocalRequest.hash() == aPortableRequest->hash()) {
             if(aLocalFile.hash() == aPortableFile->hash()) {
-//					requestFound = true;
                 fileFound = true;
-//				}
             }
-//			}
         }
 
-//			if(!requestFound) {
         if(!fileFound) {
-//				updateLocal = true;
             updateLocal = true;
-//				request_registry::Request *aRequest = localRequestRegistry.add_request();
             search_index::File *aFile = localSearchIndex.add_file();
-//				aRequest->set_active(true);
-//				aRequest->set_hash(aPortableRequest->hash());
             aFile->set_hash(aPortableFile->hash());
             aFile->set_name(aPortableFile->name());
             aFile->set_size(aPortableFile->size());
             aFile->set_type(aPortableFile->type());
-//				aRequest->set_timeout(aPortableRequest->timeout());
-//			}
         }
-//		}
 	}
 
 	if(updateLocal) {
         // Update local search index
 		std::fstream output(local_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-//		if(!localRequestRegistry.SerializePartialToOstream(&output)) {
         if(!localSearchIndex.SerializePartialToOstream(&output)) {
-//			std::cerr << "Error: Failed to update request registry." << std::endl;
             std::cerr << "Error: Failed to update search index." << std::endl;
 			return false;
 		}
@@ -527,9 +482,7 @@ bool Methods::updateSearchIndex(std::string root_directory) {
     // Declare variables
 	bool alreadyDiscovered, fileDiscovered;
 	Crypto aCrypto;
-//	file_registry::Registry aFileRegistry;
     search_index::Index aSearchIndex;
-//	std::string registry_file = root_directory + "/file_registry.proto";
     std::string index_file = root_directory + "/search_index.proto";
 	std::string share_directory = root_directory + "/shared";
 
@@ -537,15 +490,11 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 	boost::filesystem::directory_iterator iter(share_path), end;
 
 	// Load search index
-//	std::fstream fr_input(registry_file.c_str(), std::ios::in | std::ios::binary);
     std::fstream si_input(index_file.c_str(), std::ios::in | std::ios::binary);
-//	if(!aFileRegistry.ParseFromIstream(&fr_input)) {
     if(!aSearchIndex.ParseFromIstream(&si_input)) {
-//		std::cerr << "Error: Failed to load file registry." << std::endl;
         std::cerr << "Error: Failed to load search index." << std::endl;
 		return false;
 	}
-//	fr_input.close();
     si_input.close();
 
 	// Lookup each file in shared directory
@@ -561,9 +510,7 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 		std::string stem = aPath.stem().string();
 
 		// Look up hash in search index
-//		for(int i = 0; i < aFileRegistry.file_size(); i++) {
         for(int i = 0; i < aSearchIndex.file_size(); i++) {
-//			const file_registry::File& aFile = aFileRegistry.file(i);
             const search_index::File& aFile = aSearchIndex.file(i);
 			if(aFile.hash() == fileHash) {
 				alreadyDiscovered = true;
@@ -574,12 +521,9 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 		if(!alreadyDiscovered) {
 			std::cout << fileHash + ": just discovered" << std::endl;
 			fileDiscovered = true;
-//			file_registry::File *aFile = aFileRegistry.add_file();
             search_index::File *aFile = aSearchIndex.add_file();
-//			aFile->set_active(true);
 			aFile->set_hash(fileHash);
 			aFile->set_name(stem);
-//			aFile->set_path(filePath);
             aFile->set_size(fileSize);
             aFile->set_type(fileType);
 		} else {
@@ -588,11 +532,8 @@ bool Methods::updateSearchIndex(std::string root_directory) {
     }
 
     if(fileDiscovered) {
-//        std::fstream output(registry_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
         std::fstream output(index_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-//        if (!aFileRegistry.SerializeToOstream(&output)) {
         if(!aSearchIndex.SerializeToOstream(&output)) {
-//            std::cerr << "Error: Failed to update file registry." << std::endl;
             std::cerr << "Error: Failed to update search index." << std::endl;
             return false;
         }
