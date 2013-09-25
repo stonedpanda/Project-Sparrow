@@ -1,0 +1,8 @@
+Project Sparrow | Offline File-Sharing Program
+
+Automates the process of sharing files amongst friends via flash drives.
+
+External Libraries:
+* Boost C++
+* Crypto++
+* Google Protocol Buffers
