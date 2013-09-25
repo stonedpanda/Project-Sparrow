@@ -7,9 +7,9 @@
 /remote
 
 # Files
+*~
 .cproject
 .project
-README.md~
 Sparrow.cbp
 Sparrow.depend
 Sparrow.layout
