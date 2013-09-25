@@ -36,7 +36,7 @@ class Methods {
         bool updateSearchIndex(std::string);
     protected:
         bool createRequest(std::string, std::string);
-        bool findFile(std::string);
+        bool findFile(std::string, std::string);
         bool initDirectory(std::string);
         bool listIndexes(std::string);
         bool listRequests(std::string);

@@ -20,12 +20,12 @@
 Console::Console() {
 	running = true;
 	s_mapCommandValues["create"] = cvCreateRequest;
+	s_mapCommandValues["find"] = cvFindFile;
 	s_mapCommandValues["help"] = cvDisplayHelp;
 	s_mapCommandValues["init"] = cvInitDirectory;
 	s_mapCommandValues["listIndexes"] = cvListIndexes;
 	s_mapCommandValues["listRequests"] = cvListRequests;
 	s_mapCommandValues["quit"] = cvQuitProgram;
-	s_mapCommandValues["search"] = cvFindFile;
 	s_mapCommandValues["sha1sum"] = cvCalculateHash;
 	s_mapCommandValues["sync"] = cvSyncDirectories;
 	s_mapCommandValues["version"] = cvShowVersion;

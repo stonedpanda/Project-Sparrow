@@ -13,7 +13,7 @@ int main() {
     // Declare variables
 	Console aConsole;
 
-    // Launch console
+    // Run console
 	aConsole.run();
 
 	// Exit program

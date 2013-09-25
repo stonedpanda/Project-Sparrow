@@ -592,7 +592,27 @@ bool Methods::createRequest(std::string file_hash, std::string root_directory) {
 	return true;
 }
 
-bool Methods::findFile(std::string query) {
+bool Methods::findFile(std::string directory, std::string query) {
+    // Declare variables
+    search_index::Index aSearchIndex;
+    std::string si_file = directory + "/search_index.proto";
+
+    // Load request registry
+    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
+    if(!aSearchIndex.ParseFromIstream(&input)) {
+        std::cerr << "Error: Unable to load search index." << std::endl;
+		return false;
+	}
+	input.close();
+
+    for(int i = 0; i < aSearchIndex.file_size(); i++) {
+        const search_index::File &aFile = aSearchIndex.file(i);
+        const std::string filename = aFile.name();
+
+        if(filename.find(query) != std::string::npos) {
+            std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
+        }
+	}
     return true;
 }
 
@@ -790,7 +810,12 @@ void Methods::createRequest() {
 
 void Methods::findFile() {
     // Declare variables
-    std::string query;
+    std::string directory, query;
+
+    // Ask user for directory
+    std::cout << "Enter directory: ";
+    std::cin >> directory;
+    std::cout << std::endl;
 
     // Ask user for query
     std::cout << "Enter query: ";
@@ -798,11 +823,11 @@ void Methods::findFile() {
     std::cout << std::endl;
 
     // Executing search query
-    std::cout << "Finding file... ";
-    if(findFile(query)) {
-        std::cout << "Success." << std::endl;
+    std::cout << "Finding file..." << std::endl;
+    if(findFile(directory, query)) {
+        std::cout << "Result: Success." << std::endl;
     } else {
-        std::cerr << "Error." << std::endl;
+        std::cerr << "Result: Error." << std::endl;
     }
     std::cout << std::endl;
 }
@@ -810,10 +835,11 @@ void Methods::findFile() {
 void Methods::help() {
     std::cout << "create - Create a file request." << std::endl;
     std::cout << "init - Initialize a directory." << std::endl;
-    std::cout << "list - List file requests in registry." << std::endl;
+    std::cout << "listIndexes - List files in search index." << std::endl;
+    std::cout << "listRequests - List requests in request registry." << std::endl;
     std::cout << "quit - Exit the program." << std::endl;
     std::cout << "sha1sum - Calculate the hash of a file." << std::endl;
-    std::cout << "sync - Sync files and requests between two directories." << std::endl;
+    std::cout << "sync - Sync files, indexes, and requests between two directories." << std::endl;
     std::cout << "version - Show version." << std::endl;
     std::cout << std::endl;
     std::cout << "Press enter to continue." << std::endl;
@@ -897,8 +923,8 @@ void Methods::sha1sum() {
 
 void Methods::showVersion() {
     std::cout << "Created: Aug 20, 2012" << std::endl;
-    std::cout << "Updated: Sep 20, 2013" << std::endl;
-    std::cout << "Version: 0.2" << std::endl;
+    std::cout << "Updated: Sep 24, 2013" << std::endl;
+    std::cout << "Version: 0.3" << std::endl;
     std::cout << std::endl;
     std::cout << "Press enter to continue." << std::endl;
 }
