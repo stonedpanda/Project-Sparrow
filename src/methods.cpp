@@ -485,12 +485,17 @@ bool Methods::updateRequestRegistry(std::string root_directory) {
 }
 
 bool Methods::updateSearchIndex(std::string root_directory) {
-    // Declare variables
+    // Instantiate variables
 	bool alreadyDiscovered, fileDiscovered;
 	CryptoLibrary aCryptoLibrary;
     search_index::Index aSearchIndex;
-    std::string index_file = root_directory + "/search_index.proto";
-	std::string share_directory = root_directory + "/shared";
+    std::string index_file, share_directory;
+
+    // Initialize parent variables
+    alreadyDiscovered = false;
+    fileDiscovered = false;
+    index_file = root_directory + "/search_index.proto";
+	share_directory = root_directory + "/shared";
 
 	boost::filesystem::path share_path(share_directory);
 	boost::filesystem::directory_iterator iter(share_path), end;
