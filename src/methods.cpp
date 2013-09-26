@@ -386,13 +386,19 @@ bool Methods::importRequests(std::string local_root_dir, std::string portable_ro
 }
 
 bool Methods::updateFileRegistry(std::string root_directory) {
-    // Declare variables
+    // Instantiate variables
 	bool alreadyDiscovered, fileDiscovered;
 	CryptoLibrary aCryptoLibrary;
 	file_registry::Registry aFileRegistry;
-	std::string registry_file = root_directory + "/file_registry.proto";
-	std::string share_directory = root_directory + "/shared";
+	std::string registry_file, share_directory;
 
+	// Set parent variables
+    alreadyDiscovered = false;
+    fileDiscovered = false;
+	registry_file = root_directory + "/file_registry.proto";
+	share_directory = root_directory + "/shared";
+
+    // Set child variables
 	boost::filesystem::path share_path(share_directory);
 	boost::filesystem::directory_iterator iter(share_path), end;
 
