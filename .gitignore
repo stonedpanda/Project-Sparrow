@@ -1,6 +1,7 @@
 # Directories
 /.settings
 /bin
+/Debug
 /local
 /obj
 /portable
@@ -13,3 +14,8 @@
 Sparrow.cbp
 Sparrow.depend
 Sparrow.layout
+Sparrow.sdf
+Sparrow.sln
+Sparrow.vcxproj
+Sparrow.vcxproj.filters
+Sparrow.vcxproj.user
