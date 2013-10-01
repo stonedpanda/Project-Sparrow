@@ -927,10 +927,15 @@ void Methods::sha1sum() {
 
     // Calculate digest
     std::cout << "Calculating digest..." << std::endl;
-    if(sha1sum(path)) {
-        std::cout << "Result: Success." << std::endl;
-    } else {
-        std::cerr << "Result: Error." << std::endl;
+//    if(sha1sum(path)) {
+//        std::cout << "Result: Success." << std::endl;
+//    } else {
+//        std::cerr << "Result: Error." << std::endl;
+//    }
+    try {
+        sha1sum(path);
+    } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
     }
     std::cout << std::endl;
 }
