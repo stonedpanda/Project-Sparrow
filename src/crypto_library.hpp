@@ -10,10 +10,13 @@
 #define CRYPTO_LIBRARY_HPP_
 
 // Load 3rd-party libraries
-#include <crypto++/dll.h>
-#include <crypto++/files.h>
-#include <crypto++/hex.h>
-#include <crypto++/sha.h>
+#include "sha1.h"
+#include <fstream>
+#include <string>
+//#include <crypto++/dll.h>
+//#include <crypto++/files.h>
+//#include <crypto++/hex.h>
+//#include <crypto++/sha.h>
 
 class CryptoLibrary {
     private:
