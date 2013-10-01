@@ -721,8 +721,11 @@ bool Methods::listRequests(std::string root_directory) {
 bool Methods::sha1sum(std::string path) {
     //Declare variables
     CryptoLibrary aCryptoLibrary;
+    std::string digest;
 
-    std::cout << aCryptoLibrary.sha1sum(path) << std::endl;
+    digest = aCryptoLibrary.sha1sum(path);
+
+    std::cout << digest << std::endl;
     return true;
 }
 
