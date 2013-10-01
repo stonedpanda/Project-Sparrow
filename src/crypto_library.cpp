@@ -39,7 +39,7 @@ std::string CryptoLibrary::sha1sum(std::string path) {
             )
         );
     } catch(const CryptoPP::Exception& e) {
-        cerr << e.what() << endl;
+        std::cerr << e.what() << std::endl;
         system("pause");
         exit(1);
     }
