@@ -23,18 +23,26 @@ CryptoLibrary::CryptoLibrary() {
 std::string CryptoLibrary::sha1sum(std::string path) {
     CryptoPP::SHA1 hashFunction;
     std::string digest;
-    CryptoPP::FileSource(
-        path.c_str(),
-        true,
-        new CryptoPP::HashFilter(
-            hashFunction,
-            new CryptoPP::HexEncoder(
-                new CryptoPP::StringSink(
-                    digest
-                ),
-                false
+
+    try {
+        CryptoPP::FileSource(
+            path.c_str(),
+            true,
+            new CryptoPP::HashFilter(
+                hashFunction,
+                new CryptoPP::HexEncoder(
+                    new CryptoPP::StringSink(
+                        digest
+                    ),
+                    false
+                )
             )
-        )
-    );
+        );
+    } catch(const CryptoPP::Exception& e) {
+        cerr << e.what() << endl;
+        system("pause");
+        exit(1);
+    }
+
     return digest;
 }
