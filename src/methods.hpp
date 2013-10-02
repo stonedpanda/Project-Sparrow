@@ -31,25 +31,16 @@ class Methods {
         bool updateFileRegistry(std::string);
         bool updateRequestRegistry(std::string);
         bool updateSearchIndex(std::string);
-    protected:
-        bool findFile(std::string, std::string);
-        bool listIndexes(std::string);
-        bool listRequests(std::string);
     public:
         int createRequest(std::string, std::string);
+        int findFile(std::string, std::string);
         int initDirectory(std::string);
+        int listIndexes(std::string);
+        int listRequests(std::string);
         int sha1sum(std::string);
         int showUsage(char**);
         int showVersion();
         int sync(std::string, std::string);
-        void createRequest();
-        void findFile();
-        void help();
-        void initDirectory();
-        void listIndexes();
-        void listRequests();
-        void sha1sum();
-        void sync();
 };
 
 #endif /* METHODS_HPP_ */

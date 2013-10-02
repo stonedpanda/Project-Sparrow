@@ -554,82 +554,6 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 }
 
 //
-// Protected Methods
-//
-
-bool Methods::findFile(std::string directory, std::string query) {
-    // Declare variables
-    search_index::Index aSearchIndex;
-    std::string si_file = directory + "/search_index.proto";
-
-    // Load request registry
-    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
-    if(!aSearchIndex.ParseFromIstream(&input)) {
-        std::cerr << "Error: Unable to load search index." << std::endl;
-		return false;
-	}
-	input.close();
-
-    for(int i = 0; i < aSearchIndex.file_size(); i++) {
-        const search_index::File &aFile = aSearchIndex.file(i);
-        const std::string filename = aFile.name();
-
-        if(filename.find(query) != std::string::npos) {
-            std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
-        }
-	}
-    return true;
-}
-
-bool Methods::listIndexes(std::string root_directory) {
-    // Declare variables
-//	request_registry::Registry aRequestRegistry;
-    search_index::Index aSearchIndex;
-//	std::string rr_file = root_directory + "/request_registry.proto";
-    std::string si_file = root_directory + "/search_index.proto";
-
-    // Load request registry
-//	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
-    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
-//	if(!aRequestRegistry.ParseFromIstream(&input)) {
-    if(!aSearchIndex.ParseFromIstream(&input)) {
-//		std::cerr << "Error: Unable to load request registry." << std::endl;
-        std::cerr << "Error: Unable to load search index." << std::endl;
-		return false;
-	}
-	input.close();
-
-//	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
-    for(int i = 0; i < aSearchIndex.file_size(); i++) {
-//		const request_registry::Request &aRequest = aRequestRegistry.request(i);
-        const search_index::File &aFile = aSearchIndex.file(i);
-//		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
-        std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
-	}
-	return true;
-}
-
-bool Methods::listRequests(std::string root_directory) {
-    // Declare variables
-	request_registry::Registry aRequestRegistry;
-	std::string rr_file = root_directory + "/request_registry.proto";
-
-    // Load request registry
-	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
-	if(!aRequestRegistry.ParseFromIstream(&input)) {
-		std::cerr << "Error: Unable to load request registry." << std::endl;
-		return false;
-	}
-	input.close();
-
-	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
-		const request_registry::Request &aRequest = aRequestRegistry.request(i);
-		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
-	}
-	return true;
-}
-
-//
 // Public Methods
 //
 
@@ -677,6 +601,30 @@ int Methods::createRequest(std::string file_hash, std::string root_directory) {
 	    output.close();
 	}
 	return true;
+}
+
+int Methods::findFile(std::string directory, std::string query) {
+    // Declare variables
+    search_index::Index aSearchIndex;
+    std::string si_file = directory + "/search_index.proto";
+
+    // Load request registry
+    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
+    if(!aSearchIndex.ParseFromIstream(&input)) {
+        std::cerr << "Error: Unable to load search index." << std::endl;
+		return false;
+	}
+	input.close();
+
+    for(int i = 0; i < aSearchIndex.file_size(); i++) {
+        const search_index::File &aFile = aSearchIndex.file(i);
+        const std::string filename = aFile.name();
+
+        if(filename.find(query) != std::string::npos) {
+            std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
+        }
+	}
+    return 0;
 }
 
 int Methods::initDirectory(std::string root_directory) {
@@ -727,6 +675,54 @@ int Methods::initDirectory(std::string root_directory) {
 	return 0;
 }
 
+int Methods::listIndexes(std::string root_directory) {
+    // Declare variables
+//	request_registry::Registry aRequestRegistry;
+    search_index::Index aSearchIndex;
+//	std::string rr_file = root_directory + "/request_registry.proto";
+    std::string si_file = root_directory + "/search_index.proto";
+
+    // Load request registry
+//	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
+    std::fstream input(si_file.c_str(), std::ios::in | std::ios::binary);
+//	if(!aRequestRegistry.ParseFromIstream(&input)) {
+    if(!aSearchIndex.ParseFromIstream(&input)) {
+//		std::cerr << "Error: Unable to load request registry." << std::endl;
+        std::cerr << "Error: Unable to load search index." << std::endl;
+		return false;
+	}
+	input.close();
+
+//	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
+    for(int i = 0; i < aSearchIndex.file_size(); i++) {
+//		const request_registry::Request &aRequest = aRequestRegistry.request(i);
+        const search_index::File &aFile = aSearchIndex.file(i);
+//		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
+        std::cout << "File - " << aFile.hash() << " - " << aFile.name() << " - " << aFile.size() << " - " << aFile.type() << std::endl;
+	}
+	return true;
+}
+
+int Methods::listRequests(std::string root_directory) {
+    // Declare variables
+	request_registry::Registry aRequestRegistry;
+	std::string rr_file = root_directory + "/request_registry.proto";
+
+    // Load request registry
+	std::fstream input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	if(!aRequestRegistry.ParseFromIstream(&input)) {
+		std::cerr << "Error: Unable to load request registry." << std::endl;
+		return false;
+	}
+	input.close();
+
+	for(int i = 0; i < aRequestRegistry.request_size(); i++) {
+		const request_registry::Request &aRequest = aRequestRegistry.request(i);
+		std::cout << "Request - " << aRequest.hash() << " - " << aRequest.active() << " - " << aRequest.timeout() << std::endl;
+	}
+	return true;
+}
+
 int Methods::sha1sum(std::string path) {
     //Instantiate variables
     CryptoLibrary aCryptoLibrary;
@@ -744,12 +740,14 @@ int Methods::sha1sum(std::string path) {
 int Methods::showUsage(char **argv) {
     std::cerr << "Usage: " << argv[0] << " <option(s)>" << std::endl;
     std::cerr << "Options:" << std::endl;
-    std::cerr << "\t-d,--digest FILE\t\tCalculate digest" << std::endl;
-    std::cerr << "\t-h,--help\t\t\tShow this help message" << std::endl;
-    std::cerr << "\t-i,--init DIRECTORY\t\tInitialize directory" << std::endl;
-    std::cerr << "\t-r,--request DIGEST DIRECTORY\tCreate file request" << std::endl;
-    std::cerr << "\t-s,--sync LOCAL PORTABLE\tSync directories" << std::endl;
-    std::cerr << "\t-v,--version\t\t\tShow version information" << std::endl;
+    std::cerr << "\t-d,--digest FILE\t\t\tCalculate digest" << std::endl;
+    std::cerr << "\t-f,--find DIRECTORY QUERY\t\tSearch index for file" << std::endl;
+    std::cerr << "\t-h,--help\t\t\t\tShow this help message" << std::endl;
+    std::cerr << "\t-i,--init DIRECTORY\t\t\tInitialize directory" << std::endl;
+    std::cerr << "\t-l,--list DIRECTORY TYPE\t\tList records" << std::endl;
+    std::cerr << "\t-r,--request DIGEST DIRECTORY\t\tCreate file request" << std::endl;
+    std::cerr << "\t-s,--sync LOCAL PORTABLE\t\tSync directories" << std::endl;
+    std::cerr << "\t-v,--version\t\t\t\tShow version information" << std::endl;
     return 0;
 }
 

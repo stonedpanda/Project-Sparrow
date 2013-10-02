@@ -31,6 +31,7 @@ std::string CryptoLibrary::sha1sum(std::string path) {
     std::string buffer(size, ' ');
     t.seekg(0);
     t.read(&buffer[0], size);
+    t.close();
 
     unsigned char hash[20];
     char hexstring[41];

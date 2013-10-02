@@ -10,7 +10,7 @@
 #include "console.hpp"
 
 int main(int argc, char* argv[]) {
-    // Declare variables
+    // Instantiate variables
 	Console aConsole;
 
     // Run console

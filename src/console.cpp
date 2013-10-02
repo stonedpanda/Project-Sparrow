@@ -31,11 +31,32 @@ int Console::run(int argc, char** argv) {
                 std::cerr << "--digest option requires one argument." << std::endl;
                 return 1;
             }
+        } else if((arg == "-f") || (arg == "--find")) {
+            if(i + 2 < argc) {
+                return aMethod.findFile(argv[i + 1], argv[i + 2]);
+            } else {
+                std::cerr << "--find option requires two arguments." << std::endl;
+                return 1;
+            }
         } else if((arg == "-i") || (arg == "--init")) {
             if(i + 1 < argc) {
                 return aMethod.initDirectory(argv[i + 1]);
             } else {
                 std::cerr << "--init option requires one argument." << std::endl;
+                return 1;
+            }
+        } else if((arg == "-l") || (arg == "--list")) {
+            if(i + 2 < argc) {
+                std::string type = argv[i + 2];
+                if(type == "INDEXES") {
+                    return aMethod.listIndexes(argv[i + 1]);
+                } else if(type == "REQUESTS") {
+                    return aMethod.listRequests(argv[i + 1]);
+                } else {
+                    std::cerr << "--list option requires a valid type (INDEXES, REQUESTS)" << std::endl;
+                }
+            } else {
+                std::cerr << "--list option requires two arguments." << std::endl;
                 return 1;
             }
         } else if((arg == "-r") || (arg == "--request")) {
