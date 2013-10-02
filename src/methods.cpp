@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : methods.cpp
 // Author      : Justin Holz
-// Version     : 0.3
+// Version     : 0.4
 // Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
@@ -557,52 +557,6 @@ bool Methods::updateSearchIndex(std::string root_directory) {
 // Protected Methods
 //
 
-bool Methods::createRequest(std::string file_hash, std::string root_directory) {
-	// Declare variables
-	bool alreadyRequested = false;
-	bool requestAdded = false;
-	request_registry::Registry aRequestRegistry;
-	std::string rr_file = root_directory + "/request_registry.proto";
-
-	// Load request registry
-	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
-	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
-		std::cerr << "Error: Failed to load request registry." << std::endl;
-		return false;
-	}
-	rr_input.close();
-
-	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
-		const request_registry::Request& aRequest = aRequestRegistry.request(i);
-		if(aRequest.hash() == file_hash) {
-			alreadyRequested = true;
-		}
-	}
-
-	if(!alreadyRequested) {
-		std::time_t t = std::time(0);
-		int timeout = t + 1209600;	// 2 weeks
-		requestAdded = true;
-		request_registry::Request *aRequest = aRequestRegistry.add_request();
-		aRequest->set_active(true);
-		aRequest->set_hash(file_hash);
-		aRequest->set_timeout(timeout);
-	} else {
-//		std::cout << file_hash + ": already requested" << std::endl;
-	}
-
-	if(requestAdded) {
-        // Update request registry
-		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
-	    if (!aRequestRegistry.SerializeToOstream(&output)) {
-	    	std::cerr << "Error: Failed to update request registry." << std::endl;
-	    	return false;
-	    }
-	    output.close();
-	}
-	return true;
-}
-
 bool Methods::findFile(std::string directory, std::string query) {
     // Declare variables
     search_index::Index aSearchIndex;
@@ -625,49 +579,6 @@ bool Methods::findFile(std::string directory, std::string query) {
         }
 	}
     return true;
-}
-
-bool Methods::initDirectory(std::string root_directory) {
-    // Declare variables
-    FILE *pFile;
-	std::string fr_file = root_directory + "/file_registry.proto";
-	std::string rr_file = root_directory + "/request_registry.proto";
-	std::string si_file = root_directory + "/search_index.proto";
-	std::string share_folder = root_directory + "/shared";
-
-    // Check for file registry
-	if(!boost::filesystem::exists(fr_file)) {
-        // Create file registry
-		pFile = fopen(fr_file.c_str(), "w");
-		if(pFile != NULL) {
-			fclose(pFile);
-		}
-	}
-
-    // Check for request registry
-	if(!boost::filesystem::exists(rr_file)) {
-        // Create request registry
-		pFile = fopen(rr_file.c_str(), "w");
-		if(pFile != NULL) {
-			fclose(pFile);
-		}
-	}
-
-	// Check for search index
-	if(!boost::filesystem::exists(si_file)) {
-        // Create search index
-        pFile = fopen(si_file.c_str(), "w");
-        if(pFile != NULL) {
-            fclose(pFile);
-        }
-	}
-
-    // Check for share folder
-	if(!boost::filesystem::is_directory(share_folder)) {
-        // Create share folder
-		boost::filesystem::create_directory(share_folder);
-	}
-	return true;
 }
 
 bool Methods::listIndexes(std::string root_directory) {
@@ -718,21 +629,143 @@ bool Methods::listRequests(std::string root_directory) {
 	return true;
 }
 
-bool Methods::sha1sum(std::string path) {
-    //Declare variables
+//
+// Public Methods
+//
+
+int Methods::createRequest(std::string file_hash, std::string root_directory) {
+	// Declare variables
+	bool alreadyRequested = false;
+	bool requestAdded = false;
+	request_registry::Registry aRequestRegistry;
+	std::string rr_file = root_directory + "/request_registry.proto";
+
+	// Load request registry
+	std::fstream rr_input(rr_file.c_str(), std::ios::in | std::ios::binary);
+	if(!aRequestRegistry.ParseFromIstream(&rr_input)) {
+		std::cerr << "Error: Failed to load request registry." << std::endl;
+		return false;
+	}
+	rr_input.close();
+
+	for(int i = 0; i< aRequestRegistry.request_size(); i++) {
+		const request_registry::Request& aRequest = aRequestRegistry.request(i);
+		if(aRequest.hash() == file_hash) {
+			alreadyRequested = true;
+		}
+	}
+
+	if(!alreadyRequested) {
+		std::time_t t = std::time(0);
+		int timeout = t + 1209600;	// 2 weeks
+		requestAdded = true;
+		request_registry::Request *aRequest = aRequestRegistry.add_request();
+		aRequest->set_active(true);
+		aRequest->set_hash(file_hash);
+		aRequest->set_timeout(timeout);
+	} else {
+//		std::cout << file_hash + ": already requested" << std::endl;
+	}
+
+	if(requestAdded) {
+        // Update request registry
+		std::fstream output(rr_file.c_str(), std::ios::out | std::ios::trunc | std::ios::binary);
+	    if (!aRequestRegistry.SerializeToOstream(&output)) {
+	    	std::cerr << "Error: Failed to update request registry." << std::endl;
+	    	return false;
+	    }
+	    output.close();
+	}
+	return true;
+}
+
+int Methods::initDirectory(std::string root_directory) {
+    // Declare variables
+    FILE *pFile;
+	std::string fr_file = root_directory + "/file_registry.proto";
+	std::string rr_file = root_directory + "/request_registry.proto";
+	std::string si_file = root_directory + "/search_index.proto";
+	std::string share_folder = root_directory + "/shared";
+
+	std::cout << "Initializing directory...\t\t";
+
+    // Check for file registry
+	if(!boost::filesystem::exists(fr_file)) {
+        // Create file registry
+		pFile = fopen(fr_file.c_str(), "w");
+		if(pFile != NULL) {
+			fclose(pFile);
+		}
+	}
+
+    // Check for request registry
+	if(!boost::filesystem::exists(rr_file)) {
+        // Create request registry
+		pFile = fopen(rr_file.c_str(), "w");
+		if(pFile != NULL) {
+			fclose(pFile);
+		}
+	}
+
+	// Check for search index
+	if(!boost::filesystem::exists(si_file)) {
+        // Create search index
+        pFile = fopen(si_file.c_str(), "w");
+        if(pFile != NULL) {
+            fclose(pFile);
+        }
+	}
+
+    // Check for share folder
+	if(!boost::filesystem::is_directory(share_folder)) {
+        // Create share folder
+		boost::filesystem::create_directory(share_folder);
+	}
+
+	std::cout << "Success." << std::endl;
+
+	return 0;
+}
+
+int Methods::sha1sum(std::string path) {
+    //Instantiate variables
     CryptoLibrary aCryptoLibrary;
     std::string digest;
 
+    // Calculate digest
     digest = aCryptoLibrary.sha1sum(path);
 
+    // Print digest
     std::cout << digest << std::endl;
-    return true;
+
+    return 0;
 }
 
-bool Methods::sync(std::string local_root, std::string portable_root) {
+int Methods::showUsage(char **argv) {
+    std::cerr << "Usage: " << argv[0] << " <option(s)>" << std::endl;
+    std::cerr << "Options:" << std::endl;
+    std::cerr << "\t-d,--digest FILE\t\tCalculate digest" << std::endl;
+    std::cerr << "\t-h,--help\t\t\tShow this help message" << std::endl;
+    std::cerr << "\t-i,--init DIRECTORY\t\tInitialize directory" << std::endl;
+    std::cerr << "\t-r,--request DIGEST DIRECTORY\tCreate file request" << std::endl;
+    std::cerr << "\t-s,--sync LOCAL PORTABLE\tSync directories" << std::endl;
+    std::cerr << "\t-v,--version\t\t\tShow version information" << std::endl;
+    return 0;
+}
+
+int Methods::showVersion() {
+    std::cout << "Project Sparrow | Offline File-sharing Program\n"
+              << "Created:\tAug 20, 2012\n"
+              << "Updated:\tOct 01, 2013\n"
+              << "Version:\t0.4\n";
+    return 0;
+}
+
+int Methods::sync(std::string local_root, std::string portable_root) {
+    std::cout << "Syncing directories..." << std::endl;
+
     // Initialize directories
-    std::cout << "Initializing directories... ";
-    if(initDirectory(local_root) && initDirectory(portable_root)) {
+    if((initDirectory(local_root) == 0) && (initDirectory(portable_root) == 0)) {
         std::cout << "Success." << std::endl;
     } else {
         std::cerr << "Error." << std::endl;
@@ -791,183 +824,5 @@ bool Methods::sync(std::string local_root, std::string portable_root) {
         std::cerr << "Error." << std::endl;
     }
 
-    return true;
-}
-
-//
-// Public Methods
-//
-
-void Methods::createRequest() {
-    // Declare variables
-    std::string digest, directory;
-
-    // Ask user for directory
-    std::cout << "Enter directory: ";
-    std::cin >> directory;
-    std::cout << std::endl;
-
-    // Ask user for digest
-    std::cout << "Enter file hash: ";
-    std::cin >> digest;
-    std::cout << std::endl;
-
-    // Create request
-    std::cout << "Creating request... ";
-    if(createRequest(digest, directory)) {
-        std::cout << "Success." << std::endl;
-    } else {
-        std::cerr << "Error." << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::findFile() {
-    // Declare variables
-    std::string directory, query;
-
-    // Ask user for directory
-    std::cout << "Enter directory: ";
-    std::cin >> directory;
-    std::cout << std::endl;
-
-    // Ask user for query
-    std::cout << "Enter query: ";
-    std::cin >> query;
-    std::cout << std::endl;
-
-    // Executing search query
-    std::cout << "Finding file..." << std::endl;
-    if(findFile(directory, query)) {
-        std::cout << "Result: Success." << std::endl;
-    } else {
-        std::cerr << "Result: Error." << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::help() {
-    std::cout << "create - Create a file request." << std::endl;
-    std::cout << "init - Initialize a directory." << std::endl;
-    std::cout << "listIndexes - List files in search index." << std::endl;
-    std::cout << "listRequests - List requests in request registry." << std::endl;
-    std::cout << "quit - Exit the program." << std::endl;
-    std::cout << "sha1sum - Calculate the hash of a file." << std::endl;
-    std::cout << "sync - Sync files, indexes, and requests between two directories." << std::endl;
-    std::cout << "version - Show version." << std::endl;
-    std::cout << std::endl;
-    std::cout << "Press enter to continue." << std::endl;
-}
-
-void Methods::initDirectory() {
-    // Declare variables
-    std::string directory;
-
-    // Ask user for directory
-    std::cout << "Enter directory: ";
-    std::cin >> directory;
-    std::cout << std::endl;
-
-    // Initialize directory
-    std::cout << "Initializing directory... ";
-    if(initDirectory(directory)) {
-        std::cout << "Success." << std::endl;
-    } else {
-        std::cerr << "Error." << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::listIndexes() {
-    // Declare variables
-    std::string directory;
-
-    // Ask user for directory
-    std::cout << "Enter directory: ";
-    std::cin >> directory;
-    std::cout << std::endl;
-
-    // List indexes
-    std::cout << "Listing indexes..." << std::endl;
-    if(listIndexes(directory)) {
-        std::cout << "Result: Success." << std::endl;
-    } else {
-        std::cerr << "Result: Error." << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::listRequests() {
-    // Declare variables
-    std::string directory;
-
-    // Ask user for directory
-    std::cout << "Enter directory: ";
-    std::cin >> directory;
-    std::cout << std::endl;
-
-    // List requests
-    std::cout << "Listing requests..." << std::endl;
-    if(listRequests(directory)) {
-        std::cout << "Result: Success." << std::endl;
-    } else {
-        std::cerr << "Result: Error." << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::sha1sum() {
-    // Declare variables
-    std::string path;
-
-    // Ask user for file location
-    std::cout << "Enter file location: ";
-    std::cin >> path;
-    std::cout << std::endl;
-
-    // Calculate digest
-    std::cout << "Calculating digest..." << std::endl;
-//    if(sha1sum(path)) {
-//        std::cout << "Result: Success." << std::endl;
-//    } else {
-//        std::cerr << "Result: Error." << std::endl;
-//    }
-    try {
-        sha1sum(path);
-    } catch (std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
-    std::cout << std::endl;
-}
-
-void Methods::showVersion() {
-    std::cout << "Created: Aug 20, 2012" << std::endl;
-    std::cout << "Updated: Sep 24, 2013" << std::endl;
-    std::cout << "Version: 0.3" << std::endl;
-    std::cout << std::endl;
-    std::cout << "Press enter to continue." << std::endl;
-}
-
-void Methods::sync() {
-    // Declare variables
-	std::string local_root;
-	std::string portable_root;
-
-    // Ask user for local directory
-	std::cout << "Enter local directory: ";
-	std::cin >> local_root;
-	std::cout << std::endl;
-
-    // Ask user for portable directory
-	std::cout << "Enter portable directory: ";
-	std::cin >> portable_root;
-	std::cout << std::endl;
-
-    std::cout << "Syncing directories..." << std::endl;
-	if(sync(local_root, portable_root)) {
-        std::cout << "Result: Success." << std::endl;
-	} else {
-        std::cerr << "Result: Error." << std::endl;
-	}
-	std::cout << std::endl;
+    return 0;
 }

@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : methods.hpp
 // Author      : Justin Holz
-// Version     : 0.3
+// Version     : 0.4
 // Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
@@ -17,9 +17,6 @@
 
 // Load 3rd-party libraries
 #include <boost/filesystem.hpp>
-#include <crypto++/files.h>
-#include <crypto++/hex.h>
-#include <crypto++/sha.h>
 #include <ctime>
 #include <fstream>
 
@@ -35,14 +32,16 @@ class Methods {
         bool updateRequestRegistry(std::string);
         bool updateSearchIndex(std::string);
     protected:
-        bool createRequest(std::string, std::string);
         bool findFile(std::string, std::string);
-        bool initDirectory(std::string);
         bool listIndexes(std::string);
         bool listRequests(std::string);
-        bool sha1sum(std::string);
-        bool sync(std::string, std::string);
     public:
+        int createRequest(std::string, std::string);
+        int initDirectory(std::string);
+        int sha1sum(std::string);
+        int showUsage(char**);
+        int showVersion();
+        int sync(std::string, std::string);
         void createRequest();
         void findFile();
         void help();
@@ -50,7 +49,6 @@ class Methods {
         void listIndexes();
         void listRequests();
         void sha1sum();
-        void showVersion();
         void sync();
 };
 

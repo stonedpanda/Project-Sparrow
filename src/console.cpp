@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : console.cpp
 // Author      : Justin Holz
-// Version     : 0.3
+// Version     : 0.4
 // Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
@@ -10,79 +10,53 @@
 #include "console.hpp"
 
 //
-// Private Methods
-//
-
-//
 // Public Methods
 //
 
 Console::Console() {
-	running = true;
-	s_mapCommandValues["create"] = cvCreateRequest;
-	s_mapCommandValues["find"] = cvFindFile;
-	s_mapCommandValues["help"] = cvDisplayHelp;
-	s_mapCommandValues["init"] = cvInitDirectory;
-	s_mapCommandValues["listIndexes"] = cvListIndexes;
-	s_mapCommandValues["listRequests"] = cvListRequests;
-	s_mapCommandValues["quit"] = cvQuitProgram;
-	s_mapCommandValues["sha1sum"] = cvCalculateHash;
-	s_mapCommandValues["sync"] = cvSyncDirectories;
-	s_mapCommandValues["version"] = cvShowVersion;
 }
 
-void Console::run() {
+int Console::run(int argc, char** argv) {
 	Methods aMethod;
+	std::vector <std::string> sources;
 
-	std::cout << "Project Sparrow | Offline File-Sharing Program" << std::endl;
-	std::cout << std::endl;
-
-	while(running) {
-		std::cout << "Command: ";
-		std::cout.flush();
-		std::cin.getline(commandInput, 255);
-		std::cout << std::endl;
-
-		switch(s_mapCommandValues[commandInput]) {
-            case cvCalculateHash:
-                aMethod.sha1sum();
-                break;
-            case cvCreateRequest:
-                aMethod.createRequest();
-                break;
-            case cvDisplayHelp:
-                aMethod.help();
-                break;
-            case cvFindFile:
-                aMethod.findFile();
-                break;
-            case cvInitDirectory:
-                aMethod.initDirectory();
-                break;
-            case cvListIndexes:
-                aMethod.listIndexes();
-                break;
-            case cvListRequests:
-                aMethod.listRequests();
-                break;
-            case cvShowVersion:
-                aMethod.showVersion();
-                break;
-            case cvSyncDirectories:
-                aMethod.sync();
-                break;
-            case cvQuitProgram:
-                running = false;
-                break;
-            default:
-                std::cout << "'" << commandInput << "' is not a valid command." << std::endl;
-                std::cout << std::endl;
-                std::cout << "Press enter to continue." << std::endl;
-                break;
-        }
-
-        if(running) {
-            std::cin.ignore(255, '\n');
+	for(int i = 0; i < argc; i++) {
+        std::string arg = argv[i];
+        if((argc == 1) || (arg == "-h") || (arg == "--help")) {
+            return aMethod.showUsage(argv);
+        } else if((arg == "-d") || (arg == "--digest")) {
+            if(i + 1 < argc) {
+                return aMethod.sha1sum(argv[i + 1]);
+            } else {
+                std::cerr << "--digest option requires one argument." << std::endl;
+                return 1;
+            }
+        } else if((arg == "-i") || (arg == "--init")) {
+            if(i + 1 < argc) {
+                return aMethod.initDirectory(argv[i + 1]);
+            } else {
+                std::cerr << "--init option requires one argument." << std::endl;
+                return 1;
+            }
+        } else if((arg == "-r") || (arg == "--request")) {
+            if(i + 2 < argc) {
+                return aMethod.createRequest(argv[i + 1], argv[i + 2]);
+            } else {
+                std::cerr << "--request option requires two arguments." << std::endl;
+                return 1;
+            }
+        } else if((arg == "-s") || (arg == "--sync")) {
+            if(i + 2 < argc) {
+                return aMethod.sync(argv[i + 1], argv[i + 2]);
+            } else {
+                std::cerr << "--sync option requires two arguments." << std::endl;
+                return 1;
+            }
+        } else if((arg == "-v") || (arg == "--version")) {
+            return aMethod.showVersion();
+        } else {
+            sources.push_back(argv[i]);
         }
     }
+    return 1;
 }

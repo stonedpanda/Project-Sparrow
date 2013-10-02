@@ -1,7 +1,7 @@
 //============================================================================
 // Name        : console.hpp
 // Author      : Justin Holz
-// Version     : 0.3
+// Version     : 0.4
 // Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
@@ -14,29 +14,12 @@
 
 // Load 3rd-party libraries
 #include <iostream>
-#include <map>
+#include <vector>
 
 class Console {
-    private:
-        bool running;
-        char commandInput[255];
-        enum commandValues {
-            cvNotDefined,
-            cvCalculateHash,
-            cvCreateRequest,
-            cvDisplayHelp,
-            cvFindFile,
-            cvInitDirectory,
-            cvListIndexes,
-            cvListRequests,
-            cvQuitProgram,
-            cvShowVersion,
-            cvSyncDirectories,
-        };
-        std::map<std::string, commandValues> s_mapCommandValues;
     public:
         Console();
-        void run();
+        int run(int, char**);
 };
 
 #endif /* CONSOLE_HPP_ */
