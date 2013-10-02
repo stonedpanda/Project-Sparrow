@@ -9,6 +9,6 @@ You -> 8 friends -> 64 friends -> 512 friends -> 4,096 friends -> 32,768 friends
 Chances are pretty good that one of them has the file you're looking for.
 
 External Libraries:
-* Boost C++
-* Crypto++
-* Google Protocol Buffers
+* Boost C++ (http://www.boost.org/)
+* Google Protocol Buffers (http://code.google.com/p/protobuf/)
+* SmallSHA1 (http://code.google.com/p/smallsha1/)
