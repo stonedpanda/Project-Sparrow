@@ -1,8 +1,6 @@
 Project Sparrow | Offline File-Sharing Program
 
-Author: Justin Holz
-
-Copyright: Creative Commons Attribution-NonCommercial-ShareAlike License | http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+Copyright: Creative Commons Attribution-NonCommercial-ShareAlike License | http://bit.ly/R0z7ri
 
 Automates the process of sharing files amongst friends via flash drives. The idea is to take advantage of the theory of "Six degrees of separation" to move files from source to destination using your existing network of friends.
 
