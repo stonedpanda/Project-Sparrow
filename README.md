@@ -10,6 +10,9 @@ You -> 8 friends -> 64 friends -> 512 friends -> 4,096 friends -> 32,768 friends
 
 Chances are pretty good that one of them has the file you're looking for.
 
+Downloads:
+* Windows (x86) - http://www33.zippyshare.com/v/61818728/file.html
+
 External Libraries:
 * Boost C++ (http://www.boost.org/)
 * Google Protocol Buffers (http://code.google.com/p/protobuf/)
