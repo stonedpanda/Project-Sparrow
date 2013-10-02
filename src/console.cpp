@@ -2,7 +2,7 @@
 // Name        : console.cpp
 // Author      : Justin Holz
 // Version     : 0.4
-// Copyright   : Creative Commons Attribution–ShareAlike License | http://freedomdefined.org/Licenses/CC-BY-SA
+// Copyright   : Creative Commons Attribution-NonCommercial-ShareAlike License | http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 // Description : Project Sparrow | Offline File-Sharing Program
 //============================================================================
 
